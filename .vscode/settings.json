@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "gb.h": "c",
-        "cgb.h": "c"
+        "cgb.h": "c",
+        "hardware.h": "c"
     }
 }
