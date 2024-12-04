@@ -5,15 +5,10 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/../Resources/gbdk/include/**"
-            ]
-            // "defines": [],
-            // "macFrameworkPath": [
-            //     "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks"
-            // ],
-            // "compilerPath": "/usr/bin/clang",
-            // "cStandard": "c17",
-            // "cppStandard": "c++17",
-            // "intelliSenseMode": "macos-clang-arm64"
+            ],
+            "compilerPath": "${workspaceFolder}/../Resources/gbdk/bin/lcc",
+            "cStandard": "c99",
+            "intelliSenseMode": "gcc-x64"
         }
     ],
     "version": 4

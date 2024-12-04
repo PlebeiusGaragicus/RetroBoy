@@ -2,11 +2,13 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build ROM",
+            "label": "build",
             "type": "shell",
-            "command": "mkdir build; ../Resources/gbdk/bin/lcc -debug -o build/game.gb src/main.c",
-            "problemMatcher": [
-                "$gcc"
+            "command": "${workspaceFolder}/../Resources/gbdk/bin/lcc",
+            "args": [
+                "-o",
+                "${workspaceFolder}/game.gb",
+                "${workspaceFolder}/src/main.c"
             ],
             "group": {
                 "kind": "build",
