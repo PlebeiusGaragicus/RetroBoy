@@ -1,13 +1,30 @@
-#include <gb/gb.h>
-#include <gb/drawing.h>
-
 #include <stdint.h>
 #include <stdio.h>
 #include <rand.h>
 
+#include <gb/gb.h>
+#include <gb/drawing.h>
 
-uint8_t PlayerX = 0;
-uint8_t PlayerY = 0;
+#include "sprites/Trump.h"
+
+// Position variables (using fixed-point for smoother movement)
+int16_t PlayerX = 0;
+int16_t PlayerY = 0;
+// Velocity variables
+int8_t VelX = 0;
+int8_t VelY = 0;
+// Constants
+#define ACCELERATION 1
+#define MAX_VELOCITY 4
+#define FRICTION 1
+#define BOUNCE_FACTOR -3
+
+// Screen boundaries
+#define MIN_X 8
+#define MAX_X 160
+#define MIN_Y 16
+#define MAX_Y 152
+
 
 
 unsigned char CrossSprite[] =
@@ -28,30 +45,41 @@ void init()
 	SHOW_BKG;
 	SHOW_SPRITES;
 	DISPLAY_ON;
+
+    color(DKGREY, WHITE, SOLID);
 }
 
+void show_Trump() {
+
+    // Load tileset into GB memory
+     set_bkg_data(0, TrumpFace_tileset_size, TrumpFace_tileset);
+
+     // Fill screen with splashscreen map
+     set_bkg_tiles(0, 0, 20, 18, TrumpFace_tilemap);
+
+    //  delay(1250);
+}
 
 void seed_prng()
 {
-        printf(" \n\n\n\n\n\n\n\n    PRESS START!\n");
-        // abuse user input for seed generation
-        waitpad(J_START);
-        uint16_t seed = LY_REG;
-        seed |= (uint16_t)DIV_REG << 8;
-        initrand(seed);
+    printf(" \n\n\n\n\n\n\n\n    PRESS START!\n");
+    waitpad(J_START);
+    uint16_t seed = LY_REG;
+    seed |= (uint16_t)DIV_REG << 8;
+    initrand(seed);
 
-		printf("\n\nLucky number: %d\n\n", seed);
-		delay(250);
-		// clear_screen();
+    printf("\n\nLucky number: %d\n\n", seed);
+    delay(250);
+    // clear_screen();
 
-		uint8_t countdown = 20;
-        while(countdown-- > 0)
-        {
-            uint8_t r = ((uint8_t)rand()) % (uint8_t)2;
-            printf("%d", r);
+    uint8_t countdown = 20;
+    while(countdown-- > 0)
+    {
+        uint8_t r = ((uint8_t)rand()) % (uint8_t)2;
+        printf("%d", r);
 
-			vsync();
-        }
+        vsync();
+    }
 }
 
 
@@ -66,35 +94,78 @@ void clear_screen() {
 }
 
 
+
+void update_physics() {
+    uint8_t key = joypad();
+    
+    if (key & J_LEFT) {
+        VelX -= ACCELERATION;
+        if (VelX < -MAX_VELOCITY) VelX = -MAX_VELOCITY;
+    }
+    else if (key & J_RIGHT) {
+        VelX += ACCELERATION;
+        if (VelX > MAX_VELOCITY) VelX = MAX_VELOCITY;
+    }
+    else {
+        // Apply friction when no input
+        if (VelX > 0) VelX -= FRICTION;
+        else if (VelX < 0) VelX += FRICTION;
+    }
+
+    if (key & J_UP) {
+        VelY -= ACCELERATION;
+        if (VelY < -MAX_VELOCITY) VelY = -MAX_VELOCITY;
+    }
+    else if (key & J_DOWN) {
+        VelY += ACCELERATION;
+        if (VelY > MAX_VELOCITY) VelY = MAX_VELOCITY;
+    }
+    else {
+        // Apply friction when no input
+        if (VelY > 0) VelY -= FRICTION;
+        else if (VelY < 0) VelY += FRICTION;
+    }
+
+    // Update position
+    PlayerX += VelX;
+    PlayerY += VelY;
+
+    // Screen boundary collision
+    if (PlayerX < MIN_X) {
+        PlayerX = MIN_X;
+        VelX *= BOUNCE_FACTOR;
+    }
+    if (PlayerX > MAX_X) {
+        PlayerX = MAX_X;
+        VelX *= BOUNCE_FACTOR;
+    }
+    if (PlayerY < MIN_Y) {
+        PlayerY = MIN_Y;
+        VelY *= BOUNCE_FACTOR;
+    }
+    if (PlayerY > MAX_Y) {
+        PlayerY = MAX_Y;
+        VelY *= BOUNCE_FACTOR;
+    }
+}
+
 void main()
 {
-	init();
-	seed_prng();
-	clear_screen();
-
-	set_sprite_data(0, 16, CrossSprite);
-	color(DKGREY, WHITE, SOLID);
-
-
-	PlayerX = random(10, 190);
-	PlayerY = random(10, 190);
-
-	uint8_t key;
-	while (1) {
-		key = joypad();
-
-		if (key & J_UP)
-			PlayerY--;
-		else if (key & J_DOWN)
-			PlayerY++;
-
-		if (key & J_LEFT)
-			PlayerX--;
-		else if (key & J_RIGHT)
-			PlayerX++;
-
-		move_sprite(0, PlayerX, PlayerY);
-
-		vsync();
-	}
+    show_Trump();
+    init();
+    delay(1250);
+    seed_prng();
+    clear_screen();
+    
+    set_sprite_data(0, 16, CrossSprite);
+    // color(DKGREY, WHITE, SOLID);
+    
+    PlayerX = random(MIN_X, MAX_X);
+    PlayerY = random(MIN_Y, MAX_Y);
+    
+    while (1) {
+        update_physics();
+        move_sprite(0, PlayerX, PlayerY);
+        vsync();
+    }
 }
