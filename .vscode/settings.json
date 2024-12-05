@@ -2,6 +2,7 @@
     "files.associations": {
         "gb.h": "c",
         "cgb.h": "c",
-        "hardware.h": "c"
+        "hardware.h": "c",
+        "drawing.h": "c"
     }
 }
