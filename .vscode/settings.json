@@ -6,6 +6,9 @@
         "drawing.h": "c",
         "nes.h": "c",
         "sprites.C": "cpp",
-        "sprites.h": "c"
+        "sprites.h": "c",
+        "stdint.h": "c",
+        "stdio.h": "c",
+        "intro.h": "c"
     }
 }
