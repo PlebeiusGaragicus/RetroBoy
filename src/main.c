@@ -3,9 +3,11 @@
 #include <rand.h>
 
 #include <gb/gb.h>
+#include <nes/nes.h>
 #include <gb/drawing.h>
 
-#include "sprites/Trump.h"
+#include "assets/Trump.h"
+#include "assets/sprites.h"
 
 // Position variables (using fixed-point for smoother movement)
 int16_t PlayerX = 0;
@@ -27,12 +29,6 @@ int8_t VelY = 0;
 
 
 
-unsigned char CrossSprite[] =
-{
-    0x00,0x00,0x00,0x00,0x10,0x10,0x38,0x38,0x10,0x10,0x00,0x00,0x00,0x00,0x00,0x00,
-};
-
-
 
 int random(int min, int max) {
 	return (rand() % (max - min + 1)) + min;
@@ -42,11 +38,22 @@ int random(int min, int max) {
 
 void init()
 {
+    // Define 4 colors for one palette (from lightest to darkest)
+    palette_color_t palette[] = {
+        RGB8(0, 0, 0),        // Black (Color 3)
+        RGB8(255, 255, 255), // White (Color 0)
+        RGB8(170, 170, 170), // Light grey (Color 1)
+        RGB8(85, 85, 85)    // Dark grey (Color 2)
+    };
+
+    // Set the background palette
+    set_bkg_palette(0, 1, palette);  // Use palette 0, set 1 palette, use our palette data
+
 	SHOW_BKG;
 	SHOW_SPRITES;
 	DISPLAY_ON;
 
-    color(DKGREY, WHITE, SOLID);
+    // color(DKGREY, WHITE, SOLID);
 }
 
 void show_Trump() {
@@ -157,7 +164,7 @@ void main()
     seed_prng();
     clear_screen();
     
-    set_sprite_data(0, 16, CrossSprite);
+    set_sprite_data(0, 16, Gooby);
     // color(DKGREY, WHITE, SOLID);
     
     PlayerX = random(MIN_X, MAX_X);
