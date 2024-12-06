@@ -6,10 +6,10 @@
 #include <gb/cgb.h>
 #include <gb/drawing.h>
 
-#include "sprites.h"
-#include "intro.h"
-
 #include "VERSION.h"
+#include "intro.h"
+#include "sprites.h"
+
 
 
 

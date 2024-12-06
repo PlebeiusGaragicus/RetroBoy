@@ -12,22 +12,7 @@
 
 
 
-
-
-
-
-
-// Position variables (using fixed-point for smoother movement)
-int16_t PlayerX = 0;
-int16_t PlayerY = 0;
-// Velocity variables
-int8_t VelX = 0;
-int8_t VelY = 0;
-// Constants
-#define ACCELERATION 1
-#define MAX_VELOCITY 4
-#define FRICTION 1
-#define BOUNCE_FACTOR -3
+// #####################################################################################
 
 // Screen boundaries
 #define MIN_X 8
@@ -37,6 +22,16 @@ int8_t VelY = 0;
 
 
 
+int16_t PlayerX = 0;
+int16_t PlayerY = 0;
+
+int8_t VelX = 0;
+int8_t VelY = 0;
+
+#define ACCELERATION 1
+#define MAX_VELOCITY 4
+#define FRICTION 1
+#define BOUNCE_FACTOR -3
 
 
 
@@ -44,8 +39,7 @@ int8_t VelY = 0;
 
 
 
-
-
+// #####################################################################################
 void update_physics() {
     uint8_t key = joypad();
     
@@ -100,6 +94,10 @@ void update_physics() {
     }
 }
 
+
+
+
+// #####################################################################################
 void main()
 {
     // show_Trump();
@@ -107,9 +105,9 @@ void main()
     // delay(1250);
     seed_prng();
     clear_screen();
-    
-    set_sprite_data(0, 16, Gooby);
     // color(DKGREY, WHITE, SOLID);
+
+    set_sprite_data(0, 16, Gooby);
     
     PlayerX = random(MIN_X, MAX_X);
     PlayerY = random(MIN_Y, MAX_Y);
@@ -120,4 +118,3 @@ void main()
         vsync();
     }
 }
-//
