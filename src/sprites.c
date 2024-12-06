@@ -1,10 +1,6 @@
 // Generated using GB Export by AngelSix https://github.com/angelsix/retrosix-resources
 // Enhanced version based of original by https://github.com/gabrielcnr
 
-#define TrumpFace_tilemap_width 0
-#define TrumpFace_tilemap_height 0
-
-#define TrumpFace_tileset_size 202
 
 const unsigned char TrumpFace_tileset[] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,

@@ -1,3 +1,13 @@
+
+#define TrumpFace_tilemap_width 0
+#define TrumpFace_tilemap_height 0
+
+#define TrumpFace_tileset_size 202
+
+extern const unsigned char TrumpFace_tileset[]; 
+
+extern const unsigned char TrumpFace_tilemap[];
+
 unsigned char Gooby[] =
 {
     0x00,0x08,0x00,0x18,0x66,0x76,0x3C,0x3E,0x55,0x6B,0x41,0x7F,0x3E,0x3E,0x00,0x00,

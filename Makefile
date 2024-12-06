@@ -1,0 +1,33 @@
+# Compiler and tools
+GBDK_HOME = ../Resources/gbdk
+LCC = $(GBDK_HOME)/bin/lcc
+
+# Directories
+SRC_DIR = src
+BUILD_DIR = build
+
+# Source files and output
+SOURCES = $(wildcard $(SRC_DIR)/*.c)
+OUTPUT = $(BUILD_DIR)/game.gb
+
+# Compiler flags
+CFLAGS = -Wa-l -Wl-m -Wl-j
+
+# Main target
+all: $(OUTPUT)
+
+# Make sure the build directory exists and compile
+$(OUTPUT): $(SOURCES) | $(BUILD_DIR)
+	@echo "Compiling $(SOURCES) to $(OUTPUT)..."
+	$(LCC) $(CFLAGS) -o $(OUTPUT) $(SOURCES)
+
+$(BUILD_DIR):
+	@echo "Creating build directory..."
+	mkdir -p $(BUILD_DIR)
+
+# Clean rule
+clean:
+	@echo "Cleaning build directory..."
+	rm -rf $(BUILD_DIR)
+
+.PHONY: all clean

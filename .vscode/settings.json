@@ -4,6 +4,8 @@
         "cgb.h": "c",
         "hardware.h": "c",
         "drawing.h": "c",
-        "nes.h": "c"
+        "nes.h": "c",
+        "sprites.C": "cpp",
+        "sprites.h": "c"
     }
 }
