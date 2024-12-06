@@ -9,6 +9,7 @@
         "sprites.h": "c",
         "stdint.h": "c",
         "stdio.h": "c",
-        "intro.h": "c"
+        "intro.h": "c",
+        "version.h": "c"
     }
 }

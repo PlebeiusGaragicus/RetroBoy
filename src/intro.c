@@ -45,7 +45,8 @@ void init()
 // https://stackoverflow.com/questions/66105001/how-can-you-get-a-random-number-on-gbdk
 void seed_prng()
 {
-    printf("Build: %d", BUILD);
+    // printf("Build: %d", BUILD);
+    printf("%s\n", VERSION);
     printf(" \n\n\n\n\n\n\n\n    PRESS START!\n");
     waitpad(J_START);
     uint16_t seed = LY_REG;
