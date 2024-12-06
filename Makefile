@@ -11,7 +11,7 @@ SOURCES = $(wildcard $(SRC_DIR)/*.c)
 OUTPUT = $(BUILD_DIR)/game.gb
 
 # Compiler flags
-CFLAGS = -Wa-l -Wl-m -Wl-j
+CFLAGS = -Wa-l -Wl-m -Wl-j -msm83:gb
 
 # Main target
 all: $(OUTPUT)
@@ -19,6 +19,7 @@ all: $(OUTPUT)
 # Make sure the build directory exists and compile
 $(OUTPUT): $(SOURCES) | $(BUILD_DIR)
 	@echo "Compiling $(SOURCES) to $(OUTPUT)..."
+	@echo "Running: $(LCC) $(CFLAGS) -o $(OUTPUT) $(SOURCES)"
 	$(LCC) $(CFLAGS) -o $(OUTPUT) $(SOURCES)
 
 $(BUILD_DIR):
