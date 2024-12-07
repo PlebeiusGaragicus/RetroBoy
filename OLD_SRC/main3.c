@@ -107,8 +107,7 @@ void ready_start() {
             break;
 
         // every 20 frames
-        // if( frame_count % 20 == 0 )
-        if( sys_time % 20 == 0 )
+        if( frame_count % 20 == 0 )
         {
             x = random(MIN_X, MAX_X);
             y = random(MIN_Y, MAX_Y);
@@ -162,29 +161,3 @@ void main()
         }
     }
 }
-
-
-
-
-
-
-/*
-
-fixed player[2];
-...
-// Modify player position using its 16 bit representation
-player[0].w += player_speed_x;
-player[1].w += player_speed_y;
-...
-// Use only the upper 8 bits for setting the sprite position
-move_sprite(0, player[0].h ,player[1].h);
-
-*/
-
-
-/*
-20.72.5.10 sys_time volatile uint16_t sys_time [extern]
-Global Time Counter in VBL periods (60Hz)
-Increments once per Frame
-Will wrap around every∼18 minutes (unsigned 16 bits = 65535 / 60 / 60 = 18.2)
-*/
