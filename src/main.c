@@ -1,6 +1,5 @@
 #include <stdint.h>
 #include <stdio.h>
-// #include <rand.h>
 #include <types.h>  // for fixed type
 
 #include <gb/gb.h>
@@ -11,119 +10,107 @@
 #include "util.h"
 #include "intro.h"
 
-
-
 // #####################################################################################
 
-// Screen boundaries
+
 #define MIN_X 8
 #define MAX_X 160
 #define MIN_Y 16
 #define MAX_Y 152
-
 
 BOOLEAN game_over = FALSE;
 uint8_t level = 0;
 
 
 
+#define TOP_SPEED 900
+#define SPEED_CHANGE 15
 
-#define TOP_SPEED 40
-#define SPEED_CHANGE 1
-
-fixed PlayerPos[2];    // [0] is X, [1] is Y
-// Keep velocities as int8_t since they're small increments
-int8_t VelX = 0;
-int8_t VelY = 0;
-
+// [0] is X, [1] is Y
+fixed PlayerPos[2];
+int16_t VelX = 0;
+int16_t VelY = 0;
 
 fixed Coin[2];
 int8_t coin_vel_x = 0;
 int8_t coin_vel_y = 0;
 
 
-
-
 // Helper function to reduce velocity by ~70%
-int8_t reduce_velocity(int8_t vel) {
-    int8_t quarter = vel >> 2;    // divide by 4
-    int8_t sixteenth = vel >> 4;  // divide by 16
-    return quarter + sixteenth;
+// int8_t reduce_velocity(int8_t vel) {
+//     int8_t quarter = vel >> 2;    // divide by 4
+//     int8_t sixteenth = vel >> 4;  // divide by 16
+//     return quarter + sixteenth;
+// }
+int16_t reduce_velocity(int16_t vel) {
+    return (vel * 3) >> 2;  // Multiply by 0.75
 }
 
 
 void update_physics(uint8_t key) {
-    // uint8_t key = joypad();
 
-    // Movement logic with fixed point adjustments
     if (key & J_LEFT) {
-        if (VelX < -TOP_SPEED) {
-            VelX = -TOP_SPEED;
-            if (VelY != 0) {
-                VelY += (VelY > 0) ? -1 : 1;
-            }
-        } else {
+        if (VelX > -TOP_SPEED) {
             VelX -= SPEED_CHANGE;
         }
     }
     else if (key & J_RIGHT) {
-        if (VelX > TOP_SPEED) {
-            VelX = TOP_SPEED;
-            if (VelY != 0) {
-                VelY += (VelY > 0) ? -1 : 1;
-            }
-        } else {
+        if (VelX < TOP_SPEED) {
             VelX += SPEED_CHANGE;
         }
     }
+    else // Apply friction when no input
+    {
+        if (VelX > 0)
+            VelX -= 3;
+        else if (VelX < 0)
+            VelX += 3;
+    }
 
     if (key & J_UP) {
-        if (VelY < -TOP_SPEED) {
-            VelY = -TOP_SPEED;
-            if (VelX != 0) {
-                VelX += (VelX > 0) ? -1 : 1;
-            }
-        } else {
+        if (VelY > -TOP_SPEED) {
             VelY -= SPEED_CHANGE;
         }
     }
     else if (key & J_DOWN) {
-        if (VelY > TOP_SPEED) {
-            VelY = TOP_SPEED;
-            if (VelX != 0) {
-                VelX += (VelX > 0) ? -1 : 1;
-            }
-        } else {
+        if (VelY < TOP_SPEED) {
             VelY += SPEED_CHANGE;
         }
     }
+    else // Apply friction when no input
+    {
+        if (VelY > 0)
+            // VelY--;
+            VelY -= 3;
+        else if (VelY < 0)
+            // VelY++;
+            VelY += 3;
+    }
 
-    // Update position using 16-bit math
-    // Convert VelX/VelY to fixed point by shifting left 4 bits
-    PlayerPos[0].w += ((int16_t)VelX << 4);
-    PlayerPos[1].w += ((int16_t)VelY << 4);
+    // Update position using sub-pixel movement
+    PlayerPos[0].w += VelX;
+    PlayerPos[1].w += VelY;
 
     // Screen boundary collision using the high byte
     if (PlayerPos[0].h < MIN_X) {
-        PlayerPos[0].w = ((int16_t)MIN_X << 8);  // Reset both high and low bytes
+        PlayerPos[0].w = ((uint16_t)MIN_X << 8);
         VelX = -reduce_velocity(VelX);
     }
     if (PlayerPos[0].h > MAX_X) {
-        PlayerPos[0].w = ((int16_t)MAX_X << 8);
+        PlayerPos[0].w = ((uint16_t)MAX_X << 8);
         VelX = -reduce_velocity(VelX);
     }
     if (PlayerPos[1].h < MIN_Y) {
-        PlayerPos[1].w = ((int16_t)MIN_Y << 8);
+        PlayerPos[1].w = ((uint16_t)MIN_Y << 8);
         VelY = -reduce_velocity(VelY);
     }
     if (PlayerPos[1].h > MAX_Y) {
-        PlayerPos[1].w = ((int16_t)MAX_Y << 8);
+        PlayerPos[1].w = ((uint16_t)MAX_Y << 8);
         VelY = -reduce_velocity(VelY);
     }
 
-    // Move sprites using only the high byte (integer portion)
+    // Move sprite using only the high byte (integer portion)
     move_sprite(0, PlayerPos[0].h, PlayerPos[1].h);
-    // move_sprite(1, old_PlayerPos[0].h, old_PlayerPos[1].h);
 }
 
 void ready_start() {
@@ -143,32 +130,31 @@ void ready_start() {
         vsync();
     }
 
-    // Initialize fixed-point position
-    PlayerPos[0].h = x;
-    PlayerPos[0].l = 0;
-    PlayerPos[1].h = y;
-    PlayerPos[1].l = 0;
-
-    Coin[0].h = random(MIN_X, MAX_X);
-    // Coin[0].h = 40;
-    Coin[0].l = 0;
-    Coin[1].h = random(MIN_Y, MAX_Y);
-    // Coin[1].h = 100;
-    Coin[1].l = 0;
-
+    // Initialize fixed-point position with proper sub-pixel precision
+    PlayerPos[0].w = (uint16_t)x << 8;
+    PlayerPos[1].w = (uint16_t)y << 8;
+    
+    // Initialize coin position
+    Coin[0].w = (uint16_t)random(MIN_X, MAX_X) << 8;
+    Coin[1].w = (uint16_t)random(MIN_Y, MAX_Y) << 8;
+    
     move_sprite(1, Coin[0].h, Coin[1].h);
-
+    
+    // Reset velocities
+    VelX = 0;
+    VelY = 0;
+    
     game_over = FALSE;
 }
 
 void load_sprites()
 {
 
-    set_sprite_data(0, 1, TestBox);
+    set_sprite_data(0, 1, Smiles);
     // set_sprite_data(0, 1, Pointer);
     set_sprite_tile(0,0);
 
-    set_sprite_data(1, 1, Frowns);
+    set_sprite_data(1, 1, CoinSprite_light);
     set_sprite_tile(1,1);
 }
 
