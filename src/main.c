@@ -21,33 +21,28 @@
 #define MIN_Y 16
 #define MAX_Y 152
 
+
 BOOLEAN game_over = FALSE;
+uint8_t level = 0;
 
 
-// int16_t PlayerX = 0;
-// int16_t PlayerY = 0;
 
-// int16_t old_PlayerX = 0;
-// int16_t old_PlayerY = 0;
 
+#define TOP_SPEED 40
+#define SPEED_CHANGE 1
 
 fixed PlayerPos[2];    // [0] is X, [1] is Y
-fixed old_PlayerPos[2];
-
 // Keep velocities as int8_t since they're small increments
 int8_t VelX = 0;
 int8_t VelY = 0;
 
-#define TOP_SPEED 60
-#define SPEED_CHANGE 3
 
-// Helper function to reduce velocity by ~30%
-// int8_t reduce_velocity(int8_t vel) {
-//     int8_t half = vel >> 1;    // divide by 2
-//     int8_t eighth = vel >> 3;   // divide by 8
-//     int8_t sixteenth = vel >> 4; // divide by 16
-//     return half + eighth + sixteenth;
-// }
+fixed Coin[2];
+int8_t coin_vel_x = 0;
+int8_t coin_vel_y = 0;
+
+
+
 
 // Helper function to reduce velocity by ~70%
 int8_t reduce_velocity(int8_t vel) {
@@ -56,8 +51,9 @@ int8_t reduce_velocity(int8_t vel) {
     return quarter + sixteenth;
 }
 
-void update_physics() {
-    uint8_t key = joypad();
+
+void update_physics(uint8_t key) {
+    // uint8_t key = joypad();
 
     // Movement logic with fixed point adjustments
     if (key & J_LEFT) {
@@ -102,10 +98,6 @@ void update_physics() {
         }
     }
 
-    // Store old position for trail effect
-    old_PlayerPos[0].w = PlayerPos[0].w;
-    old_PlayerPos[1].w = PlayerPos[1].w;
-
     // Update position using 16-bit math
     // Convert VelX/VelY to fixed point by shifting left 4 bits
     PlayerPos[0].w += ((int16_t)VelX << 4);
@@ -114,93 +106,108 @@ void update_physics() {
     // Screen boundary collision using the high byte
     if (PlayerPos[0].h < MIN_X) {
         PlayerPos[0].w = ((int16_t)MIN_X << 8);  // Reset both high and low bytes
-        // VelX = -VelX;
         VelX = -reduce_velocity(VelX);
     }
     if (PlayerPos[0].h > MAX_X) {
         PlayerPos[0].w = ((int16_t)MAX_X << 8);
-        // VelX = -VelX;
         VelX = -reduce_velocity(VelX);
     }
     if (PlayerPos[1].h < MIN_Y) {
         PlayerPos[1].w = ((int16_t)MIN_Y << 8);
-        // VelY = -VelY;
         VelY = -reduce_velocity(VelY);
     }
     if (PlayerPos[1].h > MAX_Y) {
         PlayerPos[1].w = ((int16_t)MAX_Y << 8);
-        // VelY = -VelY;
         VelY = -reduce_velocity(VelY);
     }
 
     // Move sprites using only the high byte (integer portion)
     move_sprite(0, PlayerPos[0].h, PlayerPos[1].h);
-    move_sprite(1, old_PlayerPos[0].h, old_PlayerPos[1].h);
+    // move_sprite(1, old_PlayerPos[0].h, old_PlayerPos[1].h);
 }
 
 void ready_start() {
     uint8_t x, y;
     uint8_t key;
-    
+
     while(1) {
         key = joypad();
         if (key & (J_START | J_A | J_B))
             break;
-        
-        if(sys_time % 20 == 0) {
+
+        if(sys_time % 35 == 0) {
             x = random(MIN_X, MAX_X);
             y = random(MIN_Y, MAX_Y);
             move_sprite(0, x, y);
         }
         vsync();
     }
-    
+
     // Initialize fixed-point position
     PlayerPos[0].h = x;
     PlayerPos[0].l = 0;
     PlayerPos[1].h = y;
     PlayerPos[1].l = 0;
-    
+
+    Coin[0].h = random(MIN_X, MAX_X);
+    // Coin[0].h = 40;
+    Coin[0].l = 0;
+    Coin[1].h = random(MIN_Y, MAX_Y);
+    // Coin[1].h = 100;
+    Coin[1].l = 0;
+
+    move_sprite(1, Coin[0].h, Coin[1].h);
+
     game_over = FALSE;
+}
+
+void load_sprites()
+{
+
+    set_sprite_data(0, 1, TestBox);
+    // set_sprite_data(0, 1, Pointer);
+    set_sprite_tile(0,0);
+
+    set_sprite_data(1, 1, Frowns);
+    set_sprite_tile(1,1);
 }
 
 // #####################################################################################
 void main()
 {
-    // show_Trump();
-    init();
-    // DMG_PALETTE; //???
-    // delay(1250);
-    seed_prng();
-    clear_screen();
+    splash_screen();
 
-    set_sprite_data(0, 1, Snek_head);
-    set_sprite_tile(0,0);
-    set_sprite_data(1, 1, Snek_body);
-    set_sprite_tile(1,1);
-    set_sprite_data(2, 1, Snek_tail);
-    set_sprite_tile(2,2);
-    // set_sprite_data(1, 5, Ready);
+    load_sprites();
 
-
-
-
-    
-    while (1) {
+    uint8_t key;
+    while( TRUE ) {
         ready_start();
-        // set_sprite_data(0, 1, Gooby);
 
 
-        // PlayerX = random(MIN_X, MAX_X);
-        // PlayerY = random(MIN_Y, MAX_Y);
+        while( !game_over ) {
+            key = joypad();
 
-        while(!game_over) {
-    
-            update_physics();
-            // move_sprite(0, PlayerX, PlayerY);
-            // move_sprite(1, old_PlayerX, old_PlayerY);
+            update_physics(key);
+
+            // if ( key & J_A ) {
+            int8_t x_dist = PlayerPos[0].h - Coin[0].h;
+            int8_t y_dist = PlayerPos[1].h - Coin[1].h;
+
+            if (x_dist < 0) x_dist = -x_dist;
+            if (y_dist < 0) y_dist = -y_dist;
+
+            // if (PlayerPos[0].h == Coin[0].h && PlayerPos[1].h == Coin[1].h) {
+            // if ((PlayerPos[0].h - Coin[0].h) < 3 && (PlayerPos[1].h == Coin[1].h) < 3)
+            if (x_dist < 6 && y_dist < 6)
+            {
+                Coin[0].h = random(MIN_X, MAX_X);
+                Coin[1].h = random(MIN_Y, MAX_Y);
+                move_sprite(1, Coin[0].h, Coin[1].h);
+            }
+            // }
+
             move_sprite(0, PlayerPos[0].h, PlayerPos[1].h);
-            move_sprite(1, old_PlayerPos[0].h, old_PlayerPos[1].h);
+            // move_sprite(1, old_PlayerPos[0].h, old_PlayerPos[1].h);
 
             vsync();
         }

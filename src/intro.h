@@ -12,9 +12,10 @@
 
 extern const unsigned char TrumpFace_tilemap[];
 
-void init();
-void seed_prng();
-void show_Trump();
+void splash_screen();
+// void init();
+// void seed_prng();
+// void show_Trump();
 
 
 #endif

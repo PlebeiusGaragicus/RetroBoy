@@ -10,6 +10,7 @@
         "stdint.h": "c",
         "stdio.h": "c",
         "intro.h": "c",
-        "version.h": "c"
+        "version.h": "c",
+        "level_0.h": "c"
     }
 }

@@ -41,6 +41,11 @@ const palette_color_t palette[] = {
 // }
 
 
+void splash_screen() {
+    init();
+    seed_prng();
+    clear_screen();
+}
 
 
 void init()
@@ -53,8 +58,7 @@ void init()
 	SHOW_BKG;
 	SHOW_SPRITES;
 	DISPLAY_ON;
-
-    // color(DKGREY, WHITE, SOLID);
+    // DMG_PALETTE; //???
 }
 
 
