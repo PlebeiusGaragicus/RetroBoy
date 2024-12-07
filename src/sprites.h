@@ -4,7 +4,10 @@
 
 extern const unsigned char Gooby[];
 extern const unsigned char CrossSprite[];
-extern const unsigned char Snek[];
+// extern const unsigned char Snek[];
+extern const unsigned char Snek_head[];
+extern const unsigned char Snek_body[];
+extern const unsigned char Snek_tail[];
 extern const unsigned char Ready[];
 
 

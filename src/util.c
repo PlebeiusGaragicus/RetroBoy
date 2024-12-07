@@ -10,7 +10,7 @@ int random(int min, int max) {
 }
 
 
-
+//NOTE: this is not the best way to clear the screen and it's kinda slow
 void clear_screen() {
 	uint8_t j, f;
 	for (j = 0; j < 20; j++) { // GB screen is 20 columns wide and 18 columns tall
@@ -19,4 +19,15 @@ void clear_screen() {
 			wrtchr(' '); // Use wrtchr to place a character when using the drawing library
 		}
 	}
+}
+
+
+
+void performantdelay(uint8_t numloops)
+{
+    uint8_t i;
+    for(i = 0; i < numloops; i++)
+    {
+        wait_vbl_done();
+    }
 }

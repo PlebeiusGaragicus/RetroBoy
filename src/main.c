@@ -26,10 +26,13 @@ BOOLEAN game_over = FALSE;
 int16_t PlayerX = 0;
 int16_t PlayerY = 0;
 
+int16_t old_PlayerX = 0;
+int16_t old_PlayerY = 0;
+
 int8_t VelX = 0;
 int8_t VelY = 0;
 
-#define ACCELERATION 1
+#define ACCELERATION 2
 #define MAX_VELOCITY 4
 #define FRICTION 1
 #define BOUNCE_FACTOR -3
@@ -73,8 +76,10 @@ void update_physics() {
     }
 
     // Update position
-    PlayerX += VelX;
-    PlayerY += VelY;
+    old_PlayerX = PlayerX;
+    old_PlayerY = PlayerY;
+    PlayerX += VelX * 2;
+    PlayerY += VelY * 2;
 
     // Screen boundary collision
     if (PlayerX < MIN_X) {
@@ -98,7 +103,7 @@ void update_physics() {
 
 void ready_start() {
     uint8_t x, y;
-    volatile uint8_t frame_count = 0;
+    // volatile uint8_t frame_count = 0;
     uint8_t key;
 
     while(1) {
@@ -115,7 +120,7 @@ void ready_start() {
             move_sprite(0, x, y);
         }
 
-        frame_count++;
+        // frame_count++;
         vsync();
     }
 
@@ -138,8 +143,10 @@ void main()
     seed_prng();
     clear_screen();
 
-    set_sprite_data(0, 1, Gooby);
-    set_sprite_data(1, 5, Ready);
+    set_sprite_data(0, 1, Snek_head);
+    set_sprite_data(1, 1, Snek_body);
+    set_sprite_data(2, 1, Snek_tail);
+    // set_sprite_data(1, 5, Ready);
 
 
 
@@ -157,6 +164,7 @@ void main()
     
             update_physics();
             move_sprite(0, PlayerX, PlayerY);
+            move_sprite(1, old_PlayerX, old_PlayerY);
 
             vsync();
         }
