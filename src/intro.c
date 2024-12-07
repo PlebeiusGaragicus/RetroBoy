@@ -14,60 +14,55 @@
 #include "Justin.h"
 
 
+// DMG_PALETTE; //??? TODO:
 
+void clear_screen() {
+	// uint8_t j, f;
+	// for (j = 0; j < 20; j++) { // GB screen is 20 columns wide and 18 columns tall
+	// 	for (f = 0; f < 18; f++) { 
+	// 		gotogxy(j, f);
+	// 		wrtchr(' '); // Use wrtchr to place a character when using the drawing library
+	// 	}
+	// }
 
-// typedef uint8_t palette_color_t;
+    vsync();
+	// Load blank sprite tile into VRAM
+	set_bkg_data(0, 1, BLANK);
+	// Fill entire screen with 1st tile
+	init_bkg(0);
+}
 
+void load_justin() {
+    // Load tileset into GB memory
+    set_bkg_data(0, Justin_tileset_size, Justin_tileset);
+    // Fill screen with splashscreen map
+    set_bkg_tiles(0, 0, 20, 18, Justin_tilemap);
+}
 
-// Define 4 colors for one palette (from lightest to darkest)
-const palette_color_t palette[] = {
-    0x00,
-    0xFF,
-    0x7F,
-    0x3F
-};
-
-
-// // Declare a global variable to store the frame count
-// volatile uint8_t frame_count = 0;
-
-
-// // VBlank interrupt handler
-// void vblank_interrupt() {
-//     frame_count++;
-// }
-
-// // Initialize interrupts (call this once at the start of your program)
-// void init_interrupts() {
-//     // enable_interrupt(VBLANK_INTERRUPT);
-//     enable_interrupt();
-// }
-
-
-void splash_screen() {
-    init();
-    seed_prng();
-    clear_screen();
+void show_screen_border() {
+    // Load tileset into GB memory
+    set_bkg_data(0, 9, ScreenBorderTiles);
+    // Fill screen with splashscreen map
+    set_bkg_tiles(0, 0, 20, 18, ScreenBorderMap);
 }
 
 
-void init()
-{
-    // Load tileset into GB memory
-    set_bkg_data(0, Justin_tileset_size, Justin_tileset);
 
-     // Fill screen with splashscreen map
-    set_bkg_tiles(0, 0, 20, 18, Justin_tilemap);
 
+
+
+void splash_screen() {
 	SHOW_BKG;
 	SHOW_SPRITES;
 	DISPLAY_ON;
-
     audio_init();
 
-    performantdelay(50);
+    seed_prng();
 
-    beedledo();
+    load_justin();
+    // performantdelay(50);
+    // beedledo();
+
 
     // waitpad(J_START);
     while(TRUE) {
@@ -78,10 +73,9 @@ void init()
         vsync();
     }
 
-
-    // DMG_PALETTE; //???
+    beedledo();
+    clear_screen();
 }
-
 
 
 
@@ -89,46 +83,37 @@ void init()
 void seed_prng()
 {
     // printf("Build: %d", BUILD);
-    printf("%s\n", VERSION);
-    printf(" \n\n\n\n\n\n\n\n    PRESS START!\n");
+    printf("--------------------");
+    printf("|                  |");
+    printf("|     Retro Boy    |");
+    printf("|                  |");
+    printf("--------------------");
+    printf("\n\n\n");
+    printf("    PRESS START!");
+    printf("\n\n\n\n\n");
+    printf("  Compiled on:\n\n");
+    printf("%s", VERSION);
+
     waitpad(J_START);
-    boop();
+
     uint16_t seed = LY_REG;
     seed |= (uint16_t)DIV_REG << 8;
     initrand(seed);
 
-    printf("\n\nLucky number: %d\n\n", seed);
-    delay(250);
-    // clear_screen();
+    printf("\nLucky Number: %d", seed);
+    delay(150);
+    boop();
+    clear_screen();
 
-    uint8_t countdown = 20;
-    while(countdown-- > 0)
-    {
-        uint8_t r = ((uint8_t)rand()) % (uint8_t)2;
-        printf("%d", r);
+    // uint8_t countdown = 360; // 360 characters fit on the whole screen
+    // while(countdown-- > 0)
+    // {
+    //     uint8_t r = ((uint8_t)rand()) % (uint8_t)2;
+    //     printf("%d", r);
 
-        vsync();
-    }
-}
+    //     vsync();
+    // }
 
-
-// void show_Trump() {
-
-//     // Load tileset into GB memory
-//      set_bkg_data(0, TrumpFace_tileset_size, TrumpFace_tileset);
-
-//      // Fill screen with splashscreen map
-//      set_bkg_tiles(0, 0, 20, 18, TrumpFace_tilemap);
-
-//     //  delay(1250);
-// }
-
-
-void show_screen_border() {
-
-    // Load tileset into GB memory
-    set_bkg_data(0, 9, ScreenBorderTiles);
-
-    // Fill screen with splashscreen map
-    set_bkg_tiles(0, 0, 20, 18, ScreenBorderMap);
+    // delay(100);
+    // vsync();
 }

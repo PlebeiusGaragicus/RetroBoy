@@ -6,7 +6,7 @@
 
 
 int random(int min, int max);
-void clear_screen();
+// void clear_screen();
 void performantdelay(uint8_t numloops);
 
 #endif

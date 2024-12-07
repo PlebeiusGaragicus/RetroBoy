@@ -10,9 +10,8 @@
 
 #include "sprites.h"
 
-
+void clear_screen();
 void splash_screen();
-
 void show_screen_border();
 
 #endif
