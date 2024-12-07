@@ -153,6 +153,8 @@ void ready_start() {
 
 void load_sprites()
 {
+    show_screen_border();
+
 
     set_sprite_data(0, 1, Smiles);
     // set_sprite_data(0, 1, Pointer);
@@ -169,6 +171,8 @@ void main()
     splash_screen();
 
     load_sprites();
+
+    // show_screen_border();
 
     uint8_t key;
     while( TRUE ) {

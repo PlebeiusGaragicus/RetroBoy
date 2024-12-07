@@ -112,13 +112,23 @@ void seed_prng()
 }
 
 
-void show_Trump() {
+// void show_Trump() {
+
+//     // Load tileset into GB memory
+//      set_bkg_data(0, TrumpFace_tileset_size, TrumpFace_tileset);
+
+//      // Fill screen with splashscreen map
+//      set_bkg_tiles(0, 0, 20, 18, TrumpFace_tilemap);
+
+//     //  delay(1250);
+// }
+
+
+void show_screen_border() {
 
     // Load tileset into GB memory
-     set_bkg_data(0, TrumpFace_tileset_size, TrumpFace_tileset);
+    set_bkg_data(0, 9, ScreenBorderTiles);
 
-     // Fill screen with splashscreen map
-     set_bkg_tiles(0, 0, 20, 18, TrumpFace_tilemap);
-
-    //  delay(1250);
+    // Fill screen with splashscreen map
+    set_bkg_tiles(0, 0, 20, 18, ScreenBorderMap);
 }
