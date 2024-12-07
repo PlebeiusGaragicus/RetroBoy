@@ -96,9 +96,9 @@ void splash_screen() {
 
     seed_prng();
 
-    // load_justin();
-    load_cybertruck();
+    load_justin();
     // load_trump();
+    // load_cybertruck();
 
     performantdelay(50);
 
