@@ -4,6 +4,8 @@
 
 extern const unsigned char Gooby[];
 extern const unsigned char CrossSprite[];
+extern const unsigned char Snek[];
+extern const unsigned char Ready[];
 
 
 #define TrumpFace_tilemap_width 0

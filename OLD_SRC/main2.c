@@ -20,7 +20,6 @@
 #define MIN_Y 16
 #define MAX_Y 152
 
-BOOLEAN game_over = FALSE;
 
 
 int16_t PlayerX = 0;
@@ -96,42 +95,7 @@ void update_physics() {
 }
 
 
-void ready_start() {
-    // clear_screen();
-    // set_sprite_data(1, 5, Ready);
-    // move_sprite(2, 48, 100);
 
-    // uint8_t x = random(MIN_X, MAX_X);
-    // uint8_t y = random(MIN_Y, MAX_Y);
-    uint8_t x, y;
-    volatile uint8_t frame_count = 0;
-
-    uint8_t key;
-    while(1) {
-        key = joypad();
-        if (key & (J_START | J_A | J_B))
-            break;
-
-        if( frame_count % 20 == 0 )
-        {
-            x = random(MIN_X, MAX_X);
-            y = random(MIN_Y, MAX_Y);
-            move_sprite(2, x, y);
-        }
-
-        frame_count++;
-        vsync();
-    }
-
-    // hide sprite
-    move_sprite(2, 0, 0);
-
-    PlayerX = x;
-    PlayerY = y;
-
-    game_over = FALSE;
-    // clear_screen(); // NOTE: this is slow...
-}
 
 // #####################################################################################
 void main()
@@ -141,28 +105,16 @@ void main()
     // delay(1250);
     seed_prng();
     clear_screen();
+    // color(DKGREY, WHITE, SOLID);
 
-    set_sprite_data(0, 1, Gooby);
-    set_sprite_data(1, 5, Ready);
-
-
-
-
+    set_sprite_data(0, 16, Gooby);
+    
+    PlayerX = random(MIN_X, MAX_X);
+    PlayerY = random(MIN_Y, MAX_Y);
     
     while (1) {
-        ready_start();
-        // set_sprite_data(0, 1, Gooby);
-
-
-        // PlayerX = random(MIN_X, MAX_X);
-        // PlayerY = random(MIN_Y, MAX_Y);
-
-        while(!game_over) {
-    
-            update_physics();
-            move_sprite(0, PlayerX, PlayerY);
-
-            vsync();
-        }
+        update_physics();
+        move_sprite(0, PlayerX, PlayerY);
+        vsync();
     }
 }

@@ -10,6 +10,8 @@
 
 #include "sprites.h"
 
+extern const unsigned char TrumpFace_tilemap[];
+
 void init();
 void seed_prng();
 void show_Trump();

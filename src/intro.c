@@ -25,11 +25,29 @@ const palette_color_t palette[] = {
 };
 
 
+// // Declare a global variable to store the frame count
+// volatile uint8_t frame_count = 0;
+
+
+// // VBlank interrupt handler
+// void vblank_interrupt() {
+//     frame_count++;
+// }
+
+// // Initialize interrupts (call this once at the start of your program)
+// void init_interrupts() {
+//     // enable_interrupt(VBLANK_INTERRUPT);
+//     enable_interrupt();
+// }
+
+
+
 
 void init()
 {
+    // init_interrupts();
     // Use palette 0, set 1 palette, use our palette data
-    set_bkg_palette(0, 1, palette);
+    // set_bkg_palette(0, 1, palette);
     // set_bkg_palette_entry(0, 0, palette[0]);
 
 	SHOW_BKG;
