@@ -7,8 +7,11 @@
 #include <gb/drawing.h>
 
 #include "VERSION.h"
+#include "util.h"
+#include "audio.h"
 #include "intro.h"
 #include "sprites.h"
+#include "Justin.h"
 
 
 
@@ -50,14 +53,32 @@ void splash_screen() {
 
 void init()
 {
-    // init_interrupts();
-    // Use palette 0, set 1 palette, use our palette data
-    // set_bkg_palette(0, 1, palette);
-    // set_bkg_palette_entry(0, 0, palette[0]);
+    // Load tileset into GB memory
+    set_bkg_data(0, Justin_tileset_size, Justin_tileset);
+
+     // Fill screen with splashscreen map
+    set_bkg_tiles(0, 0, 20, 18, Justin_tilemap);
 
 	SHOW_BKG;
 	SHOW_SPRITES;
 	DISPLAY_ON;
+
+    audio_init();
+
+    performantdelay(50);
+
+    beedledo();
+
+    // waitpad(J_START);
+    while(TRUE) {
+        if (joypad()) {
+            boop();
+            break;
+        }
+        vsync();
+    }
+
+
     // DMG_PALETTE; //???
 }
 
@@ -71,6 +92,7 @@ void seed_prng()
     printf("%s\n", VERSION);
     printf(" \n\n\n\n\n\n\n\n    PRESS START!\n");
     waitpad(J_START);
+    boop();
     uint16_t seed = LY_REG;
     seed |= (uint16_t)DIV_REG << 8;
     initrand(seed);

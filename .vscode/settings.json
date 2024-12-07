@@ -11,6 +11,7 @@
         "stdio.h": "c",
         "intro.h": "c",
         "version.h": "c",
-        "level_0.h": "c"
+        "level_0.h": "c",
+        "util.h": "c"
     }
 }

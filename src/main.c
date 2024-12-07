@@ -9,6 +9,7 @@
 #include "sprites.h"
 #include "util.h"
 #include "intro.h"
+#include "audio.h"
 
 // #####################################################################################
 
@@ -17,6 +18,8 @@
 #define MAX_X 160
 #define MIN_Y 16
 #define MAX_Y 152
+
+BOOLEAN KEY_B_PRESSED = FALSE;
 
 BOOLEAN game_over = FALSE;
 uint8_t level = 0;
@@ -30,6 +33,7 @@ uint8_t level = 0;
 fixed PlayerPos[2];
 int16_t VelX = 0;
 int16_t VelY = 0;
+int8_t PlayerSpriteIndex = 0;
 
 fixed Coin[2];
 int8_t coin_vel_x = 0;
@@ -156,6 +160,7 @@ void load_sprites()
 
     set_sprite_data(1, 1, CoinSprite_light);
     set_sprite_tile(1,1);
+    // set_sprite_prop(1,0); //TODO: figure this out.
 }
 
 // #####################################################################################
@@ -169,9 +174,24 @@ void main()
     while( TRUE ) {
         ready_start();
 
-
         while( !game_over ) {
             key = joypad();
+
+            // if ( key & J_START ) {
+            //     game_over = TRUE;
+            //     break;
+            // }
+
+            if (key & J_B) {
+                // If KEY_B_PRESSED is FALSE, set it to TRUE and call boop()
+                if (KEY_B_PRESSED == FALSE) {
+                    KEY_B_PRESSED = TRUE;
+                    bap();
+                }
+            } else {
+                // If J_B is not pressed, make sure KEY_B_PRESSED is set to FALSE
+                KEY_B_PRESSED = FALSE;
+            }
 
             update_physics(key);
 
@@ -189,6 +209,7 @@ void main()
                 Coin[0].h = random(MIN_X, MAX_X);
                 Coin[1].h = random(MIN_Y, MAX_Y);
                 move_sprite(1, Coin[0].h, Coin[1].h);
+                boop();
             }
             // }
 
@@ -204,9 +225,10 @@ void main()
 
 
 
-
 /*
 
+// https://github.com/gbdk-2020/gbdk-2020/issues/219
+// Refer to GBDK manual which contains the below snippet
 fixed player[2];
 ...
 // Modify player position using its 16 bit representation
