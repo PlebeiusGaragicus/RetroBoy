@@ -20,6 +20,7 @@
 #define MAX_Y 152
 
 BOOLEAN KEY_B_PRESSED = FALSE;
+// BOOLEAN KEY_START_PRESSED = FALSE;
 
 BOOLEAN game_over = FALSE;
 uint8_t level = 0;
@@ -120,19 +121,24 @@ void update_physics(uint8_t key) {
 void ready_start() {
     uint8_t x, y;
     uint8_t key;
+    uint8_t counter = 120;
 
-    while(1) {
-        key = joypad();
-        if (key & (J_START | J_A | J_B))
-            break;
+    // while(1) {
+    while(counter--) {
+        // key = joypad();
+        // if (key & (J_START | J_A | J_B))
+        // if (key & (J_A | J_B))
+            // break;
 
-        if(sys_time % 35 == 0) {
+        if(sys_time % 5 == 0) {
             x = random(MIN_X, MAX_X);
             y = random(MIN_Y, MAX_Y);
             move_sprite(0, x, y);
         }
         vsync();
     }
+
+    boop();
 
     // Initialize fixed-point position with proper sub-pixel precision
     PlayerPos[0].w = (uint16_t)x << 8;
@@ -141,7 +147,7 @@ void ready_start() {
     // Initialize coin position
     Coin[0].w = (uint16_t)random(MIN_X, MAX_X) << 8;
     Coin[1].w = (uint16_t)random(MIN_Y, MAX_Y) << 8;
-    
+
     move_sprite(1, Coin[0].h, Coin[1].h);
     
     // Reset velocities
@@ -165,6 +171,31 @@ void load_sprites()
     // set_sprite_prop(1,0); //TODO: figure this out.
 }
 
+void pause_screen() {
+    HIDE_SPRITES;
+    load_justin();
+    boop();
+
+    // wait for start to be released
+    while(joypad() & J_START)
+        vsync();
+
+
+    // wait for start to be pressed
+    while(1) {
+        if (joypad() & J_START)
+            break;
+        vsync();
+    }
+
+    while(joypad() & J_START)
+        vsync();
+
+    boop();
+    show_screen_border();
+    SHOW_SPRITES;
+}
+
 // #####################################################################################
 void main()
 {
@@ -181,13 +212,13 @@ void main()
         while( !game_over ) {
             key = joypad();
 
-            // if ( key & J_START ) {
-            //     game_over = TRUE;
-            //     break;
-            // }
+            if ( key & J_START ) {
+                // KEY_START_PRESSED = TRUE;
+                pause_screen();
+                continue;
+            }
 
             if (key & J_B) {
-                // If KEY_B_PRESSED is FALSE, set it to TRUE and call boop()
                 if (KEY_B_PRESSED == FALSE) {
                     KEY_B_PRESSED = TRUE;
                     bap();

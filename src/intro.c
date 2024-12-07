@@ -11,7 +11,7 @@
 #include "audio.h"
 #include "intro.h"
 #include "sprites.h"
-#include "Justin.h"
+#include "faces.h"
 
 
 // DMG_PALETTE; //??? TODO:
@@ -26,24 +26,61 @@ void clear_screen() {
 	// }
 
     vsync();
+    HIDE_BKG;
+
 	// Load blank sprite tile into VRAM
 	set_bkg_data(0, 1, BLANK);
 	// Fill entire screen with 1st tile
 	init_bkg(0);
+
+    SHOW_BKG;
 }
 
 void load_justin() {
+    HIDE_BKG;
+
     // Load tileset into GB memory
     set_bkg_data(0, Justin_tileset_size, Justin_tileset);
     // Fill screen with splashscreen map
     set_bkg_tiles(0, 0, 20, 18, Justin_tilemap);
+
+	SHOW_BKG;
+
+}
+
+void load_trump() {
+    HIDE_BKG;
+
+    // Load tileset into GB memory
+    set_bkg_data(0, TrumpFace_tileset_size, TrumpFace_tileset);
+    // Fill screen with splashscreen map
+    set_bkg_tiles(0, 0, 20, 18, TrumpFace_tilemap);
+
+	SHOW_BKG;
+
+}
+
+void load_cybertruck() {
+    HIDE_BKG;
+
+    // Load tileset into GB memory
+    set_bkg_data(0, CyberTruck_tileset_size, CyberTruck_tileset);
+    // Fill screen with splashscreen map
+    set_bkg_tiles(0, 0, 20, 18, CyberTruck_tilemap);
+
+	SHOW_BKG;
+
 }
 
 void show_screen_border() {
+    HIDE_BKG;
+
     // Load tileset into GB memory
     set_bkg_data(0, 9, ScreenBorderTiles);
     // Fill screen with splashscreen map
     set_bkg_tiles(0, 0, 20, 18, ScreenBorderMap);
+
+    SHOW_BKG;
 }
 
 
@@ -59,17 +96,14 @@ void splash_screen() {
 
     seed_prng();
 
-    load_justin();
-    // performantdelay(50);
-    // beedledo();
+    // load_justin();
+    load_cybertruck();
+    // load_trump();
 
+    performantdelay(50);
 
-    // waitpad(J_START);
     while(TRUE) {
-        if (joypad()) {
-            boop();
-            break;
-        }
+        if (joypad()) break;
         vsync();
     }
 
@@ -85,7 +119,7 @@ void seed_prng()
     // printf("Build: %d", BUILD);
     printf("--------------------");
     printf("|                  |");
-    printf("|     Retro Boy    |");
+    printf("|    Retro  Boy    |");
     printf("|                  |");
     printf("--------------------");
     printf("\n\n\n");
@@ -95,14 +129,15 @@ void seed_prng()
     printf("%s", VERSION);
 
     waitpad(J_START);
+    boop();
 
     uint16_t seed = LY_REG;
     seed |= (uint16_t)DIV_REG << 8;
     initrand(seed);
 
     printf("\nLucky Number: %d", seed);
-    delay(150);
-    boop();
+    // delay(150);
+    performantdelay(10);
     clear_screen();
 
     // uint8_t countdown = 360; // 360 characters fit on the whole screen
