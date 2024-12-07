@@ -62,9 +62,9 @@ void update_physics(uint8_t key) {
     else // Apply friction when no input
     {
         if (VelX > 0)
-            VelX -= 3;
+            VelX -= 1;
         else if (VelX < 0)
-            VelX += 3;
+            VelX += 1;
     }
 
     if (key & J_UP) {
@@ -81,10 +81,10 @@ void update_physics(uint8_t key) {
     {
         if (VelY > 0)
             // VelY--;
-            VelY -= 3;
+            VelY -= 1;
         else if (VelY < 0)
             // VelY++;
-            VelY += 3;
+            VelY += 1;
     }
 
     // Update position using sub-pixel movement
