@@ -24,7 +24,8 @@ BOOLEAN KEY_B_PRESSED = FALSE;
 
 BOOLEAN game_over = FALSE;
 uint8_t level = 0;
-uint8_t score = 0;
+uint8_t player_score = 0;
+uint8_t enemy_score = 0;
 
 
 
@@ -368,6 +369,8 @@ void ready_start() {
     // Reset velocities
     VelX = 0;
     VelY = 0;
+
+    reset_score();
     
     game_over = FALSE;
 }
@@ -378,10 +381,31 @@ void hide_all_enemies() {
     }
 }
 
+void load_number_tiles() {
+    // Load number tiles into background memory starting at index 128
+    // (to avoid conflicts with other tiles)
+    set_bkg_data(128, 10, NumberTiles);
+}
+
+void display_scores() {
+    // Player score (top right)
+    uint8_t player_ones = (player_score % 10) + 128;
+    uint8_t player_tens = ((player_score / 10) % 10) + 128;
+    set_bkg_tiles(17, 1, 1, 1, &player_tens);
+    set_bkg_tiles(18, 1, 1, 1, &player_ones);
+    
+    // Enemy score (bottom left)
+    uint8_t enemy_ones = (enemy_score % 10) + 128;
+    uint8_t enemy_tens = ((enemy_score / 10) % 10) + 128;
+    set_bkg_tiles(1, 16, 1, 1, &enemy_tens);
+    set_bkg_tiles(2, 16, 1, 1, &enemy_ones);
+}
+
 
 void load_sprites()
 {
     show_screen_border();
+    load_number_tiles();
 
 
     set_sprite_data(0, 1, Smiles);
@@ -429,6 +453,12 @@ void pause_screen() {
     boop();
     show_screen_border();
     SHOW_SPRITES;
+}
+
+void reset_score() {
+    player_score = 0;
+    enemy_score = 0;
+    display_scores();
 }
 
 // #####################################################################################
@@ -490,6 +520,8 @@ void main()
                 Coin[0] = new_coin_x;
                 Coin[1] = new_coin_y;
                 move_sprite(1, Coin[0].h, Coin[1].h);
+                player_score++;
+                display_scores();
                 boop();
             }
             move_sprite(0, PlayerPos[0].h, PlayerPos[1].h);
@@ -525,6 +557,8 @@ void main()
                     Coin[0] = new_coin_x;
                     Coin[1] = new_coin_y;
                     move_sprite(1, Coin[0].h, Coin[1].h);
+                    enemy_score++;
+                    display_scores();
                     beedledo();
                 }
             }
