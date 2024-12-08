@@ -89,6 +89,7 @@ void show_screen_border() {
 
 
 void splash_screen() {
+    // https://www.youtube.com/watch?v=nziu1O_cj1w&list=PLrW43fNmjaQVmjvIj3Ho3rzW46GEw14F9&index=5
 	SHOW_BKG;
 	SHOW_SPRITES;
 	DISPLAY_ON;
