@@ -17,7 +17,7 @@
 // TODO double check these
 #define MIN_X 8
 #define MAX_X 160
-#define MIN_Y 8
+#define MIN_Y 16
 #define MAX_Y 152
 
 BOOLEAN KEY_B_PRESSED = FALSE;
@@ -25,11 +25,13 @@ BOOLEAN KEY_B_PRESSED = FALSE;
 
 BOOLEAN game_over = FALSE;
 uint8_t level = 0;
+uint8_t score = 0;
 
 
 
-#define TOP_SPEED 900
+#define TOP_SPEED 700
 #define SPEED_CHANGE 15
+#define PLAYER_SPEED_FRICTION 2
 
 // [0] is X, [1] is Y
 fixed PlayerPos[2];
@@ -41,12 +43,66 @@ fixed Coin[2];
 int16_t coin_vel_x = 0;
 int16_t coin_vel_y = 0;
 
-#define ENEMY_SPEED_STARTING 100
 
-fixed Enemy[2];
-int16_t enemy_vel_x = 0;
-int16_t enemy_vel_y = 0;
-uint8_t EnemyMaxSpeed = ENEMY_SPEED_STARTING;
+
+#define COIN_CHASER_SPEED 75    // Slower, methodical movement
+#define PLAYER_CHASER_SPEED 100 // Medium speed, persistent follower
+#define WANDERER_SPEED 150      // Faster but erratic movement
+
+
+#define MAX_ENEMIES 3
+#define ENEMY_TYPE_COIN_CHASER 0
+#define ENEMY_TYPE_PLAYER_CHASER 1
+#define ENEMY_TYPE_WANDERER 2
+
+typedef struct {
+    fixed pos[2];        // Position (x,y)
+    uint8_t sprite_id;   // Sprite index
+    uint8_t type;        // Enemy behavior type
+    int16_t vel_x;       // Velocity X
+    int16_t vel_y;       // Velocity Y
+    uint8_t speed;       // Movement speed
+} Enemy;
+
+Enemy enemies[MAX_ENEMIES];
+
+
+
+void init_enemy(uint8_t index, uint8_t type) {
+    enemies[index].pos[0].w = (uint16_t)random(MIN_X, MAX_X) << 8;
+    enemies[index].pos[1].w = (uint16_t)random(MIN_Y, MAX_Y) << 8;
+    enemies[index].sprite_id = index + 2; // Assuming sprites 0,1 are player/coin
+    enemies[index].type = type;
+    enemies[index].vel_x = 0;
+    enemies[index].vel_y = 0;
+
+    // Set sprite tile and speed based on enemy type
+    switch(type) {
+        case ENEMY_TYPE_COIN_CHASER:
+            set_sprite_tile(enemies[index].sprite_id, 2); // Spoky sprite
+            enemies[index].speed = COIN_CHASER_SPEED;
+            break;
+        case ENEMY_TYPE_PLAYER_CHASER:
+            set_sprite_tile(enemies[index].sprite_id, 3); // Frowns sprite
+            enemies[index].speed = PLAYER_CHASER_SPEED;
+            break;
+        case ENEMY_TYPE_WANDERER:
+            set_sprite_tile(enemies[index].sprite_id, 4); // Gooby sprite
+            enemies[index].speed = WANDERER_SPEED;
+            break;
+        default:
+            set_sprite_tile(enemies[index].sprite_id, 2); // Default to Spoky
+            enemies[index].speed = COIN_CHASER_SPEED;
+            break;
+    }
+    
+    move_sprite(enemies[index].sprite_id, 
+                enemies[index].pos[0].h, 
+                enemies[index].pos[1].h);
+}
+
+
+
 
 
 // Helper function to reduce velocity by ~70%
@@ -75,9 +131,9 @@ void update_physics(uint8_t key) {
     else // Apply friction when no input
     {
         if (VelX > 0)
-            VelX -= 1;
+            VelX -= PLAYER_SPEED_FRICTION;
         else if (VelX < 0)
-            VelX += 1;
+            VelX += PLAYER_SPEED_FRICTION;
     }
 
     if (key & J_UP) {
@@ -94,10 +150,10 @@ void update_physics(uint8_t key) {
     {
         if (VelY > 0)
             // VelY--;
-            VelY -= 1;
+            VelY -= PLAYER_SPEED_FRICTION;
         else if (VelY < 0)
             // VelY++;
-            VelY += 1;
+            VelY += PLAYER_SPEED_FRICTION;
     }
 
     // Update position using sub-pixel movement
@@ -127,26 +183,97 @@ void update_physics(uint8_t key) {
 }
 
 
-void update_enemy() {
-    // Calculate direction to coin
-    int16_t dx = Coin[0].h - Enemy[0].h;
-    int16_t dy = Coin[1].h - Enemy[1].h;
+// void update_enemy() {
+//     // Calculate direction to coin
+//     int16_t dx = Coin[0].h - Enemy[0].h;
+//     int16_t dy = Coin[1].h - Enemy[1].h;
     
-    // Update enemy position
-    if (dx > 0) Enemy[0].w += ENEMY_SPEED;
-    if (dx < 0) Enemy[0].w -= ENEMY_SPEED;
-    if (dy > 0) Enemy[1].w += ENEMY_SPEED;
-    if (dy < 0) Enemy[1].w -= ENEMY_SPEED;
+//     // Update enemy position
+//     if (dx > 0) Enemy[0].w += ENEMY_SPEED;
+//     if (dx < 0) Enemy[0].w -= ENEMY_SPEED;
+//     if (dy > 0) Enemy[1].w += ENEMY_SPEED;
+//     if (dy < 0) Enemy[1].w -= ENEMY_SPEED;
     
-    // Screen boundary collision
-    if (Enemy[0].h < MIN_X) Enemy[0].w = ((uint16_t)MIN_X << 8);
-    if (Enemy[0].h > MAX_X) Enemy[0].w = ((uint16_t)MAX_X << 8);
-    if (Enemy[1].h < MIN_Y) Enemy[1].w = ((uint16_t)MIN_Y << 8);
-    if (Enemy[1].h > MAX_Y) Enemy[1].w = ((uint16_t)MAX_Y << 8);
+//     // Screen boundary collision
+//     if (Enemy[0].h < MIN_X) Enemy[0].w = ((uint16_t)MIN_X << 8);
+//     if (Enemy[0].h > MAX_X) Enemy[0].w = ((uint16_t)MAX_X << 8);
+//     if (Enemy[1].h < MIN_Y) Enemy[1].w = ((uint16_t)MIN_Y << 8);
+//     if (Enemy[1].h > MAX_Y) Enemy[1].w = ((uint16_t)MAX_Y << 8);
     
-    // Update sprite position
-    move_sprite(2, Enemy[0].h, Enemy[1].h);
+//     // Update sprite position
+//     move_sprite(2, Enemy[0].h, Enemy[1].h);
+// }
+
+void update_coin_chaser(Enemy* enemy) {
+    // Move toward coin
+    if (Coin[0].h > enemy->pos[0].h) enemy->pos[0].w += enemy->speed;
+    if (Coin[0].h < enemy->pos[0].h) enemy->pos[0].w -= enemy->speed;
+    if (Coin[1].h > enemy->pos[1].h) enemy->pos[1].w += enemy->speed;
+    if (Coin[1].h < enemy->pos[1].h) enemy->pos[1].w -= enemy->speed;
 }
+
+void update_player_chaser(Enemy* enemy) {
+    // Move toward player
+    if (PlayerPos[0].h > enemy->pos[0].h) enemy->pos[0].w += enemy->speed;
+    if (PlayerPos[0].h < enemy->pos[0].h) enemy->pos[0].w -= enemy->speed;
+    if (PlayerPos[1].h > enemy->pos[1].h) enemy->pos[1].w += enemy->speed;
+    if (PlayerPos[1].h < enemy->pos[1].h) enemy->pos[1].w -= enemy->speed;
+}
+
+void update_wanderer(Enemy* enemy) {
+    // Random movement
+    if(sys_time % 60 == 0) {
+        enemy->vel_x = random(-enemy->speed, enemy->speed);
+        enemy->vel_y = random(-enemy->speed, enemy->speed);
+    }
+    enemy->pos[0].w += enemy->vel_x;
+    enemy->pos[1].w += enemy->vel_y;
+}
+
+void constrain_to_boundaries(Enemy* enemy) {
+    if (enemy->pos[0].h < MIN_X) {
+        enemy->pos[0].w = ((uint16_t)MIN_X << 8);
+        enemy->vel_x = -enemy->vel_x;  // Bounce off walls for wanderer
+    }
+    if (enemy->pos[0].h > MAX_X) {
+        enemy->pos[0].w = ((uint16_t)MAX_X << 8);
+        enemy->vel_x = -enemy->vel_x;
+    }
+    if (enemy->pos[1].h < MIN_Y) {
+        enemy->pos[1].w = ((uint16_t)MIN_Y << 8);
+        enemy->vel_y = -enemy->vel_y;
+    }
+    if (enemy->pos[1].h > MAX_Y) {
+        enemy->pos[1].w = ((uint16_t)MAX_Y << 8);
+        enemy->vel_y = -enemy->vel_y;
+    }
+}
+
+void update_enemies() {
+    for(uint8_t i = 0; i < MAX_ENEMIES; i++) {
+        switch(enemies[i].type) {
+            case ENEMY_TYPE_COIN_CHASER:
+                update_coin_chaser(&enemies[i]);
+                break;
+            case ENEMY_TYPE_PLAYER_CHASER:
+                update_player_chaser(&enemies[i]);
+                break;
+            case ENEMY_TYPE_WANDERER:
+                update_wanderer(&enemies[i]);
+                break;
+        }
+        
+        // Apply boundary constraints
+        constrain_to_boundaries(&enemies[i]);
+        
+        // Update sprite position
+        move_sprite(enemies[i].sprite_id, 
+                   enemies[i].pos[0].h, 
+                   enemies[i].pos[1].h);
+    }
+}
+
+
 
 void ready_start() {
     uint8_t x, y;
@@ -180,9 +307,12 @@ void ready_start() {
     move_sprite(1, Coin[0].h, Coin[1].h);
 
     // Add this in ready_start() after coin initialization
-    Enemy[0].w = (uint16_t)random(MIN_X, MAX_X) << 8;
-    Enemy[1].w = (uint16_t)random(MIN_Y, MAX_Y) << 8;
-    move_sprite(2, Enemy[0].h, Enemy[1].h);
+    // Enemy[0].w = (uint16_t)random(MIN_X, MAX_X) << 8;
+    // Enemy[1].w = (uint16_t)random(MIN_Y, MAX_Y) << 8;
+    // move_sprite(2, Enemy[0].h, Enemy[1].h);
+    init_enemy(0, ENEMY_TYPE_COIN_CHASER);
+    init_enemy(1, ENEMY_TYPE_PLAYER_CHASER);
+    init_enemy(2, ENEMY_TYPE_WANDERER);
 
     // Reset velocities
     VelX = 0;
@@ -198,14 +328,24 @@ void load_sprites()
 
     set_sprite_data(0, 1, Smiles);
     // set_sprite_data(0, 1, Pointer);
-    set_sprite_tile(0,0);
+    set_sprite_tile(0, 0);
 
     set_sprite_data(1, 1, CoinSprite_light);
-    set_sprite_tile(1,1);
+    set_sprite_tile(1, 1);
     // set_sprite_prop(1,0); //TODO: figure this out.
 
+
+    // Coin chaser sprite
     set_sprite_data(2, 1, Spoky);
-    set_sprite_tile(2,2);
+    set_sprite_tile(2, 2);
+
+    // Player chaser sprite
+    set_sprite_data(3, 1, Frowns);
+    set_sprite_tile(3, 3);
+
+    // Wanderer sprite
+    set_sprite_data(4, 1, Gooby);
+    set_sprite_tile(4, 4);
 }
 
 void pause_screen() {
@@ -288,37 +428,68 @@ void main()
 
 
 
-            update_enemy();
-            // Add collision detection with enemy
-            int16_t enemy_x_dist = PlayerPos[0].h - Enemy[0].h;
-            int16_t enemy_y_dist = PlayerPos[1].h - Enemy[1].h;
-            if (enemy_x_dist < 0) enemy_x_dist = -enemy_x_dist;
-            if (enemy_y_dist < 0) enemy_y_dist = -enemy_y_dist;
-            if (enemy_x_dist < 6 && enemy_y_dist < 6) {
-                game_over = TRUE;
-                beedledo();  // Assuming you have a death sound
+            // update_enemy();
+            // // Add collision detection with enemy
+            // int16_t enemy_x_dist = PlayerPos[0].h - Enemy[0].h;
+            // int16_t enemy_y_dist = PlayerPos[1].h - Enemy[1].h;
+            // if (enemy_x_dist < 0) enemy_x_dist = -enemy_x_dist;
+            // if (enemy_y_dist < 0) enemy_y_dist = -enemy_y_dist;
+            // if (enemy_x_dist < 6 && enemy_y_dist < 6) {
+            //     game_over = TRUE;
+            //     beedledo();  // Assuming you have a death sound
+            // }
+
+
+            // // Enemy-coin collision detection
+            // int16_t enemy_coin_x_dist = Enemy[0].h - Coin[0].h;
+            // int16_t enemy_coin_y_dist = Enemy[1].h - Coin[1].h;
+            // if (enemy_coin_x_dist < 0) enemy_coin_x_dist = -enemy_coin_x_dist;
+            // if (enemy_coin_y_dist < 0) enemy_coin_y_dist = -enemy_coin_y_dist;
+            // if (enemy_coin_x_dist < 6 && enemy_coin_y_dist < 6)
+            // {
+            //     // Enemy got the coin
+            //     Coin[0].h = random(MIN_X, MAX_X);
+            //     Coin[1].h = random(MIN_Y, MAX_Y);
+            //     move_sprite(1, Coin[0].h, Coin[1].h);
+            //     // bap();  // or whatever sound you prefer
+            //     // boop();
+            //     beedledo();
+
+            //     // Optional: Increment enemy score or trigger game over
+            //     // game_over = TRUE;  // if you want enemy catching coin to end game
+            // }
+            // In main game loop, replace existing enemy collision code with:
+
+            update_enemies();
+            for(uint8_t i = 0; i < MAX_ENEMIES; i++) {
+                int16_t enemy_x_dist = PlayerPos[0].h - enemies[i].pos[0].h;
+                int16_t enemy_y_dist = PlayerPos[1].h - enemies[i].pos[1].h;
+                
+                // Make distances positive if negative
+                if (enemy_x_dist < 0) enemy_x_dist = -enemy_x_dist;
+                if (enemy_y_dist < 0) enemy_y_dist = -enemy_y_dist;
+                
+                if (enemy_x_dist < 6 && enemy_y_dist < 6) {
+                    game_over = TRUE;
+                    beedledo();
+                    break;
+                }
+                
+                // Check enemy-coin collisions
+                int16_t enemy_coin_x_dist = enemies[i].pos[0].h - Coin[0].h;
+                int16_t enemy_coin_y_dist = enemies[i].pos[1].h - Coin[1].h;
+                
+                if (enemy_coin_x_dist < 0) enemy_coin_x_dist = -enemy_coin_x_dist;
+                if (enemy_coin_y_dist < 0) enemy_coin_y_dist = -enemy_coin_y_dist;
+                
+                if (enemy_coin_x_dist < 6 && enemy_coin_y_dist < 6) {
+                    // Enemy got the coin
+                    Coin[0].h = random(MIN_X, MAX_X);
+                    Coin[1].h = random(MIN_Y, MAX_Y);
+                    move_sprite(1, Coin[0].h, Coin[1].h);
+                    beedledo();
+                }
             }
-
-
-            // Enemy-coin collision detection
-            int16_t enemy_coin_x_dist = Enemy[0].h - Coin[0].h;
-            int16_t enemy_coin_y_dist = Enemy[1].h - Coin[1].h;
-            if (enemy_coin_x_dist < 0) enemy_coin_x_dist = -enemy_coin_x_dist;
-            if (enemy_coin_y_dist < 0) enemy_coin_y_dist = -enemy_coin_y_dist;
-            if (enemy_coin_x_dist < 6 && enemy_coin_y_dist < 6)
-            {
-                // Enemy got the coin
-                Coin[0].h = random(MIN_X, MAX_X);
-                Coin[1].h = random(MIN_Y, MAX_Y);
-                move_sprite(1, Coin[0].h, Coin[1].h);
-                // bap();  // or whatever sound you prefer
-                // boop();
-                beedledo();
-
-                // Optional: Increment enemy score or trigger game over
-                // game_over = TRUE;  // if you want enemy catching coin to end game
-            }
-
 
             vsync();
         }
