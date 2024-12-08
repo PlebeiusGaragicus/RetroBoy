@@ -372,6 +372,11 @@ void ready_start() {
     game_over = FALSE;
 }
 
+void hide_all_enemies() {
+    for(uint8_t i = 0; i < MAX_ENEMIES; i++) {
+        move_sprite(i + 2, 0, 0);  // Move sprites off-screen
+    }
+}
 
 
 void load_sprites()
@@ -502,6 +507,7 @@ void main()
                 
                 if (enemy_x_dist < 6 && enemy_y_dist < 6) {
                     game_over = TRUE;
+                    hide_all_enemies();
                     beedledo();
                     break;
                 }
@@ -525,5 +531,7 @@ void main()
 
             vsync();
         }
+
+        // Game over screen
     }
 }
