@@ -14,9 +14,10 @@
 // #####################################################################################
 
 
+// TODO double check these
 #define MIN_X 8
 #define MAX_X 160
-#define MIN_Y 16
+#define MIN_Y 8
 #define MAX_Y 152
 
 BOOLEAN KEY_B_PRESSED = FALSE;
@@ -34,18 +35,18 @@ uint8_t level = 0;
 fixed PlayerPos[2];
 int16_t VelX = 0;
 int16_t VelY = 0;
-int8_t PlayerSpriteIndex = 0;
+uint8_t PlayerSpriteIndex = 0;
 
 fixed Coin[2];
-int8_t coin_vel_x = 0;
-int8_t coin_vel_y = 0;
+int16_t coin_vel_x = 0;
+int16_t coin_vel_y = 0;
 
-#define ENEMY_SPEED 100
+#define ENEMY_SPEED_STARTING 100
 
 fixed Enemy[2];
-int8_t enemy_vel_x = 0;
-int8_t enemy_vel_y = 0;
-
+int16_t enemy_vel_x = 0;
+int16_t enemy_vel_y = 0;
+uint8_t EnemyMaxSpeed = ENEMY_SPEED_STARTING;
 
 
 // Helper function to reduce velocity by ~70%
@@ -271,8 +272,8 @@ void main()
 
 
             update_physics(key);
-            int8_t x_dist = PlayerPos[0].h - Coin[0].h;
-            int8_t y_dist = PlayerPos[1].h - Coin[1].h;
+            int16_t x_dist = PlayerPos[0].h - Coin[0].h;
+            int16_t y_dist = PlayerPos[1].h - Coin[1].h;
             if (x_dist < 0) x_dist = -x_dist;
             if (y_dist < 0) y_dist = -y_dist;
             if (x_dist < 6 && y_dist < 6)
@@ -289,8 +290,8 @@ void main()
 
             update_enemy();
             // Add collision detection with enemy
-            int8_t enemy_x_dist = PlayerPos[0].h - Enemy[0].h;
-            int8_t enemy_y_dist = PlayerPos[1].h - Enemy[1].h;
+            int16_t enemy_x_dist = PlayerPos[0].h - Enemy[0].h;
+            int16_t enemy_y_dist = PlayerPos[1].h - Enemy[1].h;
             if (enemy_x_dist < 0) enemy_x_dist = -enemy_x_dist;
             if (enemy_y_dist < 0) enemy_y_dist = -enemy_y_dist;
             if (enemy_x_dist < 6 && enemy_y_dist < 6) {
@@ -300,8 +301,8 @@ void main()
 
 
             // Enemy-coin collision detection
-            int8_t enemy_coin_x_dist = Enemy[0].h - Coin[0].h;
-            int8_t enemy_coin_y_dist = Enemy[1].h - Coin[1].h;
+            int16_t enemy_coin_x_dist = Enemy[0].h - Coin[0].h;
+            int16_t enemy_coin_y_dist = Enemy[1].h - Coin[1].h;
             if (enemy_coin_x_dist < 0) enemy_coin_x_dist = -enemy_coin_x_dist;
             if (enemy_coin_y_dist < 0) enemy_coin_y_dist = -enemy_coin_y_dist;
             if (enemy_coin_x_dist < 6 && enemy_coin_y_dist < 6)
@@ -324,29 +325,3 @@ void main()
     }
 }
 
-
-
-
-
-/*
-
-// https://github.com/gbdk-2020/gbdk-2020/issues/219
-// Refer to GBDK manual which contains the below snippet
-fixed player[2];
-...
-// Modify player position using its 16 bit representation
-player[0].w += player_speed_x;
-player[1].w += player_speed_y;
-...
-// Use only the upper 8 bits for setting the sprite position
-move_sprite(0, player[0].h ,player[1].h);
-
-*/
-
-
-/*
-20.72.5.10 sys_time volatile uint16_t sys_time [extern]
-Global Time Counter in VBL periods (60Hz)
-Increments once per Frame
-Will wrap around every∼18 minutes (unsigned 16 bits = 65535 / 60 / 60 = 18.2)
-*/
