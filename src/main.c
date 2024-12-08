@@ -39,12 +39,7 @@ void ready_start() {
     PlayerPos[0].w = (uint16_t)x << 8;
     PlayerPos[1].w = (uint16_t)y << 8;
 
-    // Initialize coin position safely
-    fixed coin_x, coin_y;
-    get_safe_position(&coin_x, &coin_y);
-    Coin[0] = coin_x;
-    Coin[1] = coin_y;
-    move_sprite(1, Coin[0].b.h, Coin[1].b.h);
+    move_coin_to_safe_position();
 
     // Reset enemy spawning
     active_enemies = 0;
