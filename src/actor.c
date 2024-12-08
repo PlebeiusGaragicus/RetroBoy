@@ -104,96 +104,19 @@ void constrain_to_boundaries(Enemy* enemy) {
     }
 }
 
-
-
-
-
-
-
-
-
-// void update_coin_chaser(Enemy* enemy) {
-//     // Move toward coin
-//     if (Coin[0].b.h > enemy->pos[0].b.h) enemy->pos[0].w += enemy->speed;
-//     if (Coin[0].b.h < enemy->pos[0].b.h) enemy->pos[0].w -= enemy->speed;
-//     if (Coin[1].b.h > enemy->pos[1].b.h) enemy->pos[1].w += enemy->speed;
-//     if (Coin[1].b.h < enemy->pos[1].b.h) enemy->pos[1].w -= enemy->speed;
-// }
-
-
-// void update_wanderer(Enemy* enemy) {
-//     // Random movement
-//     if(sys_time % 60 == 0) {
-//         // Initialize with some velocity if it doesn't have any
-//         if (enemy->vel_x == 0 && enemy->vel_y == 0) {
-//             enemy->vel_x = random(-enemy->speed, enemy->speed);
-//             enemy->vel_y = random(-enemy->speed, enemy->speed);
-//         } else {
-//             // Randomly adjust existing velocity
-//             enemy->vel_x += random(-enemy->speed/2, enemy->speed/2);
-//             enemy->vel_y += random(-enemy->speed/2, enemy->speed/2);
-            
-//             // Cap velocity
-//             if (enemy->vel_x > enemy->speed) enemy->vel_x = enemy->speed;
-//             if (enemy->vel_x < -enemy->speed) enemy->vel_x = -enemy->speed;
-//             if (enemy->vel_y > enemy->speed) enemy->vel_y = enemy->speed;
-//             if (enemy->vel_y < -enemy->speed) enemy->vel_y = -enemy->speed;
+// void sort_enemies_by_x() {
+//     // Simple bubble sort - for small number of enemies this is fine
+//     for(uint8_t i = 0; i < active_enemies - 1; i++) {
+//         for(uint8_t j = 0; j < active_enemies - i - 1; j++) {
+//             if(enemies[j].pos[0].b.h > enemies[j + 1].pos[0].b.h) {
+//                 Enemy temp;
+//                 temp = enemies[j];
+//                 enemies[j] = enemies[j + 1];
+//                 enemies[j + 1] = temp;
+//             }
 //         }
 //     }
-    
-//     // Apply velocity
-//     enemy->pos[0].w += enemy->vel_x;
-//     enemy->pos[1].w += enemy->vel_y;
 // }
-
-
-void update_coin_chaser(Enemy* enemy) {
-    // Calculate direction to coin
-    if (Coin[0].b.h > enemy->pos[0].b.h) 
-        enemy->vel_x += enemy->speed/16;
-    else if (Coin[0].b.h < enemy->pos[0].b.h)
-        enemy->vel_x -= enemy->speed/16;
-
-    if (Coin[1].b.h > enemy->pos[1].b.h)
-        enemy->vel_y += enemy->speed/16;
-    else if (Coin[1].b.h < enemy->pos[1].b.h)
-        enemy->vel_y -= enemy->speed/16;
-    
-    // Cap velocity
-    if (enemy->vel_x > enemy->speed) enemy->vel_x = enemy->speed;
-    if (enemy->vel_x < -enemy->speed) enemy->vel_x = -enemy->speed;
-    if (enemy->vel_y > enemy->speed) enemy->vel_y = enemy->speed;
-    if (enemy->vel_y < -enemy->speed) enemy->vel_y = -enemy->speed;
-    
-    // Apply velocity
-    enemy->pos[0].w += enemy->vel_x;
-    enemy->pos[1].w += enemy->vel_y;
-}
-
-
-void update_player_chaser(Enemy* enemy) {
-    // Move toward player
-    if (PlayerPos[0].b.h > enemy->pos[0].b.h) enemy->pos[0].w += enemy->speed;
-    if (PlayerPos[0].b.h < enemy->pos[0].b.h) enemy->pos[0].w -= enemy->speed;
-    if (PlayerPos[1].b.h > enemy->pos[1].b.h) enemy->pos[1].w += enemy->speed;
-    if (PlayerPos[1].b.h < enemy->pos[1].b.h) enemy->pos[1].w -= enemy->speed;
-}
-
-
-void update_wanderer(Enemy* enemy) {
-    // Random movement
-    if(sys_time % 60 == 0) {
-        enemy->vel_x = random(-enemy->speed, enemy->speed);
-        enemy->vel_y = random(-enemy->speed, enemy->speed);
-    }
-    enemy->pos[0].w += enemy->vel_x;
-    enemy->pos[1].w += enemy->vel_y;
-}
-
-
-
-
-
 
 // #############################################################################
 // External functions
@@ -302,10 +225,53 @@ void handle_player_coin_collision() {
 }
 
 
+void update_coin_chaser(Enemy* enemy) {
+    // Calculate direction to coin
+    if (Coin[0].b.h > enemy->pos[0].b.h) 
+        enemy->vel_x += enemy->speed/16;
+    else if (Coin[0].b.h < enemy->pos[0].b.h)
+        enemy->vel_x -= enemy->speed/16;
+
+    if (Coin[1].b.h > enemy->pos[1].b.h)
+        enemy->vel_y += enemy->speed/16;
+    else if (Coin[1].b.h < enemy->pos[1].b.h)
+        enemy->vel_y -= enemy->speed/16;
+    
+    // Cap velocity
+    if (enemy->vel_x > enemy->speed) enemy->vel_x = enemy->speed;
+    if (enemy->vel_x < -enemy->speed) enemy->vel_x = -enemy->speed;
+    if (enemy->vel_y > enemy->speed) enemy->vel_y = enemy->speed;
+    if (enemy->vel_y < -enemy->speed) enemy->vel_y = -enemy->speed;
+    
+    // Apply velocity
+    enemy->pos[0].w += enemy->vel_x;
+    enemy->pos[1].w += enemy->vel_y;
+}
+
+void update_player_chaser(Enemy* enemy) {
+    // Move toward player
+    if (PlayerPos[0].b.h > enemy->pos[0].b.h) enemy->pos[0].w += enemy->speed;
+    if (PlayerPos[0].b.h < enemy->pos[0].b.h) enemy->pos[0].w -= enemy->speed;
+    if (PlayerPos[1].b.h > enemy->pos[1].b.h) enemy->pos[1].w += enemy->speed;
+    if (PlayerPos[1].b.h < enemy->pos[1].b.h) enemy->pos[1].w -= enemy->speed;
+}
+
+void update_wanderer(Enemy* enemy) {
+    // Random movement
+    if(sys_time % 60 == 0) {
+        enemy->vel_x = random(-enemy->speed, enemy->speed);
+        enemy->vel_y = random(-enemy->speed, enemy->speed);
+    }
+    enemy->pos[0].w += enemy->vel_x;
+    enemy->pos[1].w += enemy->vel_y;
+}
+
+
 
 void handle_enemy_collisions() {
+    // Check each enemy against others within a reasonable distance
     for(uint8_t i = 0; i < active_enemies; i++) {
-
+        // Check coin collision
         int16_t enemy_coin_x_dist = abs(enemies[i].pos[0].b.h - Coin[0].b.h);
         int16_t enemy_coin_y_dist = abs(enemies[i].pos[1].b.h - Coin[1].b.h);
 
@@ -316,11 +282,11 @@ void handle_enemy_collisions() {
             beedledo();
         }
 
+        // Check player collision
         int16_t enemy_x_dist = abs(PlayerPos[0].b.h - enemies[i].pos[0].b.h);
         int16_t enemy_y_dist = abs(PlayerPos[1].b.h - enemies[i].pos[1].b.h);
 
         if (enemy_x_dist < 6 && enemy_y_dist < 6) {
-            // Different behavior based on enemy type
             switch(enemies[i].type) {
                 case ENEMY_TYPE_WANDERER:
                 case ENEMY_TYPE_COIN_CHASER:
@@ -330,38 +296,27 @@ void handle_enemy_collisions() {
                     int16_t orig_enemy_vel_x = enemies[i].vel_x;
                     int16_t orig_enemy_vel_y = enemies[i].vel_y;
 
-                    // Calculate average velocities
-                    int16_t avg_vel_x = (orig_player_vel_x + orig_enemy_vel_x) >> 1;
-                    int16_t avg_vel_y = (orig_player_vel_y + orig_enemy_vel_y) >> 1;
-
-                    // Apply new velocities in opposite directions
-                    VelX = avg_vel_x + ((orig_player_vel_x - avg_vel_x) >> 1);
-                    VelY = avg_vel_y + ((orig_player_vel_y - avg_vel_y) >> 1);
-                    
-                    enemies[i].vel_x = avg_vel_x + ((orig_enemy_vel_x - avg_vel_x) >> 1);
-                    enemies[i].vel_y = avg_vel_y + ((orig_enemy_vel_y - avg_vel_y) >> 1);
-
-                    // Reverse directions based on collision position
+                    // Simple collision response - exchange velocities
                     if (PlayerPos[0].b.h < enemies[i].pos[0].b.h) {
-                        VelX = -abs(VelX);
-                        enemies[i].vel_x = abs(enemies[i].vel_x);
+                        VelX = -abs(orig_player_vel_x);
+                        enemies[i].vel_x = abs(orig_enemy_vel_x);
                         PlayerPos[0].w -= 256;
                         enemies[i].pos[0].w += 256;
                     } else {
-                        VelX = abs(VelX);
-                        enemies[i].vel_x = -abs(enemies[i].vel_x);
+                        VelX = abs(orig_player_vel_x);
+                        enemies[i].vel_x = -abs(orig_enemy_vel_x);
                         PlayerPos[0].w += 256;
                         enemies[i].pos[0].w -= 256;
                     }
 
                     if (PlayerPos[1].b.h < enemies[i].pos[1].b.h) {
-                        VelY = -abs(VelY);
-                        enemies[i].vel_y = abs(enemies[i].vel_y);
+                        VelY = -abs(orig_player_vel_y);
+                        enemies[i].vel_y = abs(orig_enemy_vel_y);
                         PlayerPos[1].w -= 256;
                         enemies[i].pos[1].w += 256;
                     } else {
-                        VelY = abs(VelY);
-                        enemies[i].vel_y = -abs(enemies[i].vel_y);
+                        VelY = abs(orig_player_vel_y);
+                        enemies[i].vel_y = -abs(orig_enemy_vel_y);
                         PlayerPos[1].w += 256;
                         enemies[i].pos[1].w -= 256;
                     }
@@ -370,20 +325,58 @@ void handle_enemy_collisions() {
                     break;
 
                 case ENEMY_TYPE_PLAYER_CHASER:
-                    // game_over = TRUE;
-                    if (TESTING) {
-                        boop();
-                    } else {
+                    // if (TESTING) {
+                        // boop();
+                    // } else {
                         game_over = TRUE;
                         hide_all_enemies();
                         beedledo();
-                        break;
-                    }
+                    // }
+                    break;
+            }
+        }
+
+        // Check collisions with other enemies
+        for(uint8_t j = i + 1; j < active_enemies; j++) {
+            int16_t dx = abs(enemies[i].pos[0].b.h - enemies[j].pos[0].b.h);
+            int16_t dy = abs(enemies[i].pos[1].b.h - enemies[j].pos[1].b.h);
+
+            // Only process if they're close enough
+            if (dx < 16 && dy < 8) {
+                // Store original velocities
+                int16_t orig_enemy1_vel_x = enemies[i].vel_x;
+                int16_t orig_enemy1_vel_y = enemies[i].vel_y;
+                int16_t orig_enemy2_vel_x = enemies[j].vel_x;
+                int16_t orig_enemy2_vel_y = enemies[j].vel_y;
+
+                // Simple collision response - push apart and exchange velocities
+                if (enemies[i].pos[0].b.h < enemies[j].pos[0].b.h) {
+                    enemies[i].vel_x = -abs(orig_enemy1_vel_x);
+                    enemies[j].vel_x = abs(orig_enemy2_vel_x);
+                    enemies[i].pos[0].w -= 256;
+                    enemies[j].pos[0].w += 256;
+                } else {
+                    enemies[i].vel_x = abs(orig_enemy1_vel_x);
+                    enemies[j].vel_x = -abs(orig_enemy2_vel_x);
+                    enemies[i].pos[0].w += 256;
+                    enemies[j].pos[0].w -= 256;
+                }
+
+                if (enemies[i].pos[1].b.h < enemies[j].pos[1].b.h) {
+                    enemies[i].vel_y = -abs(orig_enemy1_vel_y);
+                    enemies[j].vel_y = abs(orig_enemy2_vel_y);
+                    enemies[i].pos[1].w -= 256;
+                    enemies[j].pos[1].w += 256;
+                } else {
+                    enemies[i].vel_y = abs(orig_enemy1_vel_y);
+                    enemies[j].vel_y = -abs(orig_enemy2_vel_y);
+                    enemies[i].pos[1].w += 256;
+                    enemies[j].pos[1].w -= 256;
+                }
             }
         }
     }
 }
-
 
 void update_enemies() {
     for(uint8_t i = 0; i < active_enemies; i++) {
@@ -408,20 +401,6 @@ void update_enemies() {
                    enemies[i].pos[1].b.h);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 void init_enemy(uint8_t index) {
     uint8_t type = ENEMY_SPAWN_CONFIG[index];
@@ -456,6 +435,3 @@ void init_enemy(uint8_t index) {
                 enemies[index].pos[0].b.h,
                 enemies[index].pos[1].b.h);
 }
-
-
-

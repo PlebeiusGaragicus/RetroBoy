@@ -56,10 +56,11 @@ typedef struct {
 
 extern Enemy enemies[MAX_ENEMIES];
 
-
+// Function declarations
 void hide_all_enemies();
 void update_enemies();
 void init_enemy(uint8_t index);
+void handle_enemy_collisions();
 
 void move_coin_to_safe_position();
 
@@ -68,8 +69,5 @@ void handle_player_coin_collision();
 
 void update_enemies();
 void handle_enemy_collisions();
-
-
-
 
 #endif
