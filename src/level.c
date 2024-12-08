@@ -28,14 +28,14 @@ void load_number_tiles() {
 void display_scores() {
     // Player score (top right)
     uint8_t player_ones = (player_score % 10) + 128;
-    uint8_t player_tens = ((player_score / 10) % 10) + 128;
-    set_bkg_tiles(17, 1, 1, 1, &player_tens);
+    // uint8_t player_tens = ((player_score / 10) % 10) + 128;
+    // set_bkg_tiles(17, 1, 1, 1, &player_tens);
     set_bkg_tiles(18, 1, 1, 1, &player_ones);
     
     // Enemy score (bottom left)
     uint8_t enemy_ones = (enemy_score % 10) + 128;
-    uint8_t enemy_tens = ((enemy_score / 10) % 10) + 128;
-    set_bkg_tiles(1, 16, 1, 1, &enemy_tens);
+    // uint8_t enemy_tens = ((enemy_score / 10) % 10) + 128;
+    // set_bkg_tiles(1, 16, 1, 1, &enemy_tens);
     set_bkg_tiles(2, 16, 1, 1, &enemy_ones);
 }
 

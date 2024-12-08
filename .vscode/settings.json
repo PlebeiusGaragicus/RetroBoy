@@ -13,5 +13,6 @@
         "version.h": "c",
         "level_0.h": "c",
         "util.h": "c"
-    }
+    },
+    "C_Cpp.default.compilerPath": "${workspaceFolder}/../Resources/gbdk/bin/lcc"
 }

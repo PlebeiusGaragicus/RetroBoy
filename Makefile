@@ -8,7 +8,7 @@ BUILD_DIR = build
 
 # Source files and output
 SOURCES = $(wildcard $(SRC_DIR)/*.c)
-OUTPUT = $(BUILD_DIR)/game.gb
+OUTPUT = $(BUILD_DIR)/RetroBoy.gb
 
 # Compiler flags
 CFLAGS = -Wa-l -Wl-m -Wl-j -msm83:gb

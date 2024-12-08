@@ -6,7 +6,7 @@
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/../Resources/gbdk/include/**"
             ],
-            "compilerPath": "${workspaceFolder}/../Resources/gbdk/bin/lcc",
+            "compilerPath": null,
             "cStandard": "c99",
             "intelliSenseMode": "gcc-x64"
         }

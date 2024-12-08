@@ -6,7 +6,9 @@
 
 
 int random(int min, int max);
-// void clear_screen();
 void performantdelay(uint8_t numloops);
+// int16_t abs(int16_t x);
+#define abs(x) ( (x) > 0 ? (x) : -(x) )
+
 
 #endif

@@ -12,8 +12,6 @@ int random(int min, int max) {
 }
 
 
-
-
 void performantdelay(uint8_t numloops)
 {
     uint8_t i;
@@ -22,3 +20,6 @@ void performantdelay(uint8_t numloops)
         wait_vbl_done();
     }
 }
+
+
+// uint16_t abs(uint16_t x) { return x > 0 ? x : -x; }
