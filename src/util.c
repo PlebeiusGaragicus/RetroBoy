@@ -1,16 +1,19 @@
 #include <rand.h>
-
 #include <gb/gb.h>
-// #include <gb/drawing.h>
 
 #include "sprites.h"
+
+
+
+
+const BOOLEAN TESTING = TRUE;
+
 
 
 
 int random(int min, int max) {
 	return (rand() % (max - min + 1)) + min;
 }
-
 
 void performantdelay(uint8_t numloops)
 {
@@ -19,6 +22,10 @@ void performantdelay(uint8_t numloops)
     {
         wait_vbl_done();
     }
+}
+
+int16_t reduce_velocity(int16_t vel) {
+    return (vel >> 2);  // Multiply by 0.5
 }
 
 
