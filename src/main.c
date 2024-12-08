@@ -11,7 +11,10 @@
 #include "intro.h"
 #include "audio.h"
 
+#include "level.h"
 
+
+const BOOLEAN QUICK_TESTING = TRUE;
 
 
 // #####################################################################################
@@ -22,10 +25,10 @@
 
 BOOLEAN KEY_B_PRESSED = FALSE;
 
-BOOLEAN game_over = FALSE;
-uint8_t level = 0;
-uint8_t player_score = 0;
-uint8_t enemy_score = 0;
+// BOOLEAN game_over = FALSE;
+// uint8_t level = 0;
+// uint8_t player_score = 0;
+// uint8_t enemy_score = 0;
 
 
 
@@ -71,6 +74,20 @@ typedef struct {
 } Enemy;
 
 Enemy enemies[MAX_ENEMIES];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -145,10 +162,83 @@ void init_enemy(uint8_t index, uint8_t type) {
 
 
 
-// used when player bounces off a wall
-// int16_t reduce_velocity(int16_t vel) {
-//     return (vel * 3) >> 2;  // Multiply by 0.75
-// }
+void constrain_to_boundaries(Enemy* enemy) {
+    if (enemy->pos[0].h < MIN_X) {
+        enemy->pos[0].w = ((uint16_t)MIN_X << 8);
+        enemy->vel_x = -enemy->vel_x;  // Bounce off walls for wanderer
+    }
+    if (enemy->pos[0].h > MAX_X) {
+        enemy->pos[0].w = ((uint16_t)MAX_X << 8);
+        enemy->vel_x = -enemy->vel_x;
+    }
+    if (enemy->pos[1].h < MIN_Y) {
+        enemy->pos[1].w = ((uint16_t)MIN_Y << 8);
+        enemy->vel_y = -enemy->vel_y;
+    }
+    if (enemy->pos[1].h > MAX_Y) {
+        enemy->pos[1].w = ((uint16_t)MAX_Y << 8);
+        enemy->vel_y = -enemy->vel_y;
+    }
+}
+
+void update_coin_chaser(Enemy* enemy) {
+    // Move toward coin
+    if (Coin[0].h > enemy->pos[0].h) enemy->pos[0].w += enemy->speed;
+    if (Coin[0].h < enemy->pos[0].h) enemy->pos[0].w -= enemy->speed;
+    if (Coin[1].h > enemy->pos[1].h) enemy->pos[1].w += enemy->speed;
+    if (Coin[1].h < enemy->pos[1].h) enemy->pos[1].w -= enemy->speed;
+}
+
+void update_player_chaser(Enemy* enemy) {
+    // Move toward player
+    if (PlayerPos[0].h > enemy->pos[0].h) enemy->pos[0].w += enemy->speed;
+    if (PlayerPos[0].h < enemy->pos[0].h) enemy->pos[0].w -= enemy->speed;
+    if (PlayerPos[1].h > enemy->pos[1].h) enemy->pos[1].w += enemy->speed;
+    if (PlayerPos[1].h < enemy->pos[1].h) enemy->pos[1].w -= enemy->speed;
+}
+
+void update_wanderer(Enemy* enemy) {
+    // Random movement
+    if(sys_time % 60 == 0) {
+        enemy->vel_x = random(-enemy->speed, enemy->speed);
+        enemy->vel_y = random(-enemy->speed, enemy->speed);
+    }
+    enemy->pos[0].w += enemy->vel_x;
+    enemy->pos[1].w += enemy->vel_y;
+}
+
+void hide_all_enemies() {
+    for(uint8_t i = 0; i < MAX_ENEMIES; i++) {
+        move_sprite(i + 2, 0, 0);  // Move sprites off-screen
+    }
+}
+
+void update_enemies() {
+    for(uint8_t i = 0; i < active_enemies; i++) {
+    // for(uint8_t i = 0; i < MAX_ENEMIES; i++) {
+        switch(enemies[i].type) {
+            case ENEMY_TYPE_COIN_CHASER:
+                update_coin_chaser(&enemies[i]);
+                break;
+            case ENEMY_TYPE_PLAYER_CHASER:
+                update_player_chaser(&enemies[i]);
+                break;
+            case ENEMY_TYPE_WANDERER:
+                update_wanderer(&enemies[i]);
+                break;
+        }
+        
+        // Apply boundary constraints
+        constrain_to_boundaries(&enemies[i]);
+        
+        // Update sprite position
+        move_sprite(enemies[i].sprite_id, 
+                   enemies[i].pos[0].h, 
+                   enemies[i].pos[1].h);
+    }
+}
+
+
 
 int16_t reduce_velocity(int16_t vel) {
     return (vel >> 2);  // Multiply by 0.5
@@ -196,8 +286,13 @@ void update_physics(uint8_t key) {
     }
 
     // Update position using sub-pixel movement
-    PlayerPos[0].w += VelX;
-    PlayerPos[1].w += VelY;
+    if (key & J_A) {
+        PlayerPos[0].w += VelX >> 1;
+        PlayerPos[1].w += VelY >> 1;
+    } else {
+        PlayerPos[0].w += VelX;
+        PlayerPos[1].w += VelY;
+    }
 
     // Screen boundary collision using the high byte
     if (PlayerPos[0].h < MIN_X) {
@@ -220,121 +315,6 @@ void update_physics(uint8_t key) {
     // Move sprite using only the high byte (integer portion)
     move_sprite(0, PlayerPos[0].h, PlayerPos[1].h);
 }
-
-
-void update_coin_chaser(Enemy* enemy) {
-    // Move toward coin
-    if (Coin[0].h > enemy->pos[0].h) enemy->pos[0].w += enemy->speed;
-    if (Coin[0].h < enemy->pos[0].h) enemy->pos[0].w -= enemy->speed;
-    if (Coin[1].h > enemy->pos[1].h) enemy->pos[1].w += enemy->speed;
-    if (Coin[1].h < enemy->pos[1].h) enemy->pos[1].w -= enemy->speed;
-}
-
-void update_player_chaser(Enemy* enemy) {
-    // Move toward player
-    if (PlayerPos[0].h > enemy->pos[0].h) enemy->pos[0].w += enemy->speed;
-    if (PlayerPos[0].h < enemy->pos[0].h) enemy->pos[0].w -= enemy->speed;
-    if (PlayerPos[1].h > enemy->pos[1].h) enemy->pos[1].w += enemy->speed;
-    if (PlayerPos[1].h < enemy->pos[1].h) enemy->pos[1].w -= enemy->speed;
-}
-
-void update_wanderer(Enemy* enemy) {
-    // Random movement
-    if(sys_time % 60 == 0) {
-        enemy->vel_x = random(-enemy->speed, enemy->speed);
-        enemy->vel_y = random(-enemy->speed, enemy->speed);
-    }
-    enemy->pos[0].w += enemy->vel_x;
-    enemy->pos[1].w += enemy->vel_y;
-}
-
-void constrain_to_boundaries(Enemy* enemy) {
-    if (enemy->pos[0].h < MIN_X) {
-        enemy->pos[0].w = ((uint16_t)MIN_X << 8);
-        enemy->vel_x = -enemy->vel_x;  // Bounce off walls for wanderer
-    }
-    if (enemy->pos[0].h > MAX_X) {
-        enemy->pos[0].w = ((uint16_t)MAX_X << 8);
-        enemy->vel_x = -enemy->vel_x;
-    }
-    if (enemy->pos[1].h < MIN_Y) {
-        enemy->pos[1].w = ((uint16_t)MIN_Y << 8);
-        enemy->vel_y = -enemy->vel_y;
-    }
-    if (enemy->pos[1].h > MAX_Y) {
-        enemy->pos[1].w = ((uint16_t)MAX_Y << 8);
-        enemy->vel_y = -enemy->vel_y;
-    }
-}
-
-void update_enemies() {
-    for(uint8_t i = 0; i < active_enemies; i++) {
-    // for(uint8_t i = 0; i < MAX_ENEMIES; i++) {
-        switch(enemies[i].type) {
-            case ENEMY_TYPE_COIN_CHASER:
-                update_coin_chaser(&enemies[i]);
-                break;
-            case ENEMY_TYPE_PLAYER_CHASER:
-                update_player_chaser(&enemies[i]);
-                break;
-            case ENEMY_TYPE_WANDERER:
-                update_wanderer(&enemies[i]);
-                break;
-        }
-        
-        // Apply boundary constraints
-        constrain_to_boundaries(&enemies[i]);
-        
-        // Update sprite position
-        move_sprite(enemies[i].sprite_id, 
-                   enemies[i].pos[0].h, 
-                   enemies[i].pos[1].h);
-    }
-}
-
-
-
-// void ready_start() {
-//     uint8_t x, y;
-//     uint8_t key;
-//     uint8_t counter = 120;
-
-//     // while(1) {
-//     while(counter--) {
-//         // key = joypad();
-//         // if (key & (J_START | J_A | J_B))
-//         // if (key & (J_A | J_B))
-//             // break;
-
-//         if(sys_time % 5 == 0) {
-//             x = random(MIN_X, MAX_X);
-//             y = random(MIN_Y, MAX_Y);
-//             move_sprite(0, x, y);
-//         }
-//         vsync();
-//     }
-
-//     boop();
-
-//     // Initialize fixed-point position with proper sub-pixel precision
-//     PlayerPos[0].w = (uint16_t)x << 8;
-//     PlayerPos[1].w = (uint16_t)y << 8;
-
-//     // Initialize coin position
-//     Coin[0].w = (uint16_t)random(MIN_X, MAX_X) << 8;
-//     Coin[1].w = (uint16_t)random(MIN_Y, MAX_Y) << 8;
-//     move_sprite(1, Coin[0].h, Coin[1].h);
-
-//     init_enemy(0, ENEMY_TYPE_COIN_CHASER);
-//     init_enemy(1, ENEMY_TYPE_PLAYER_CHASER);
-//     init_enemy(2, ENEMY_TYPE_WANDERER);
-
-//     // Reset velocities
-//     VelX = 0;
-//     VelY = 0;
-    
-//     game_over = FALSE;
-// }
 
 
 void ready_start() {
@@ -375,108 +355,20 @@ void ready_start() {
     game_over = FALSE;
 }
 
-void hide_all_enemies() {
-    for(uint8_t i = 0; i < MAX_ENEMIES; i++) {
-        move_sprite(i + 2, 0, 0);  // Move sprites off-screen
-    }
-}
-
-void load_number_tiles() {
-    // Load number tiles into background memory starting at index 128
-    // (to avoid conflicts with other tiles)
-    set_bkg_data(128, 10, NumberTiles);
-}
-
-void display_scores() {
-    // Player score (top right)
-    uint8_t player_ones = (player_score % 10) + 128;
-    uint8_t player_tens = ((player_score / 10) % 10) + 128;
-    set_bkg_tiles(17, 1, 1, 1, &player_tens);
-    set_bkg_tiles(18, 1, 1, 1, &player_ones);
-    
-    // Enemy score (bottom left)
-    uint8_t enemy_ones = (enemy_score % 10) + 128;
-    uint8_t enemy_tens = ((enemy_score / 10) % 10) + 128;
-    set_bkg_tiles(1, 16, 1, 1, &enemy_tens);
-    set_bkg_tiles(2, 16, 1, 1, &enemy_ones);
-}
 
 
-void load_sprites()
-{
-    show_screen_border();
-    load_number_tiles();
 
-
-    set_sprite_data(0, 1, Smiles);
-    // set_sprite_data(0, 1, Pointer);
-    set_sprite_tile(0, 0);
-
-    set_sprite_data(1, 1, CoinSprite_light);
-    set_sprite_tile(1, 1);
-    //TODO: research this later...
-    // set_sprite_prop(1,0);
-
-    // Coin chaser sprite
-    set_sprite_data(2, 1, Spoky);
-    set_sprite_tile(2, 2);
-
-    // Player chaser sprite
-    set_sprite_data(3, 1, Frowns);
-    set_sprite_tile(3, 3);
-
-    // Wanderer sprite
-    set_sprite_data(4, 1, Gooby);
-    set_sprite_tile(4, 4);
-}
-
-void pause_screen() {
-    HIDE_SPRITES;
-    load_justin();
-    boop();
-
-    // wait for start to be released
-    while(joypad() & J_START)
-        vsync();
-
-
-    // wait for start to be pressed
-    while(1) {
-        if (joypad() & J_START)
-            break;
-        vsync();
-    }
-
-    while(joypad() & J_START)
-        vsync();
-
-    boop();
-    show_screen_border();
-    SHOW_SPRITES;
-}
-
-void reset_score() {
-    player_score = 0;
-    enemy_score = 0;
-    display_scores();
-}
-
-// #####################################################################################
-void main()
-{
-    splash_screen();
-
+void main() {
+    splash_screen(QUICK_TESTING);
     load_sprites();
-
-    // show_screen_border();
-
+    
     uint8_t key;
-    while( TRUE ) {
+    while(TRUE) {
         ready_start();
-
-        while( !game_over ) {
+        
+        while(!game_over) {
             key = joypad();
-
+            
             // Add this section for enemy spawning
             if (active_enemies < MAX_ENEMIES) {
                 if (spawn_timer > 0) {
@@ -487,34 +379,29 @@ void main()
                     spawn_timer = SPAWN_DELAY;
                 }
             }
-
-            if ( key & J_START ) {
-                // KEY_START_PRESSED = TRUE;
+            
+            if (key & J_START) {
                 pause_screen();
                 continue;
             }
-
-
-
+            
             if (key & J_B) {
                 if (KEY_B_PRESSED == FALSE) {
                     KEY_B_PRESSED = TRUE;
                     bap();
                 }
             } else {
-                // If J_B is not pressed, make sure KEY_B_PRESSED is set to FALSE
                 KEY_B_PRESSED = FALSE;
             }
-
-
-
+            
             update_physics(key);
+            
+            // Check player-coin collisions
             int16_t x_dist = PlayerPos[0].h - Coin[0].h;
             int16_t y_dist = PlayerPos[1].h - Coin[1].h;
             if (x_dist < 0) x_dist = -x_dist;
             if (y_dist < 0) y_dist = -y_dist;
-            if (x_dist < 6 && y_dist < 6)
-            {
+            if (x_dist < 6 && y_dist < 6) {
                 fixed new_coin_x, new_coin_y;
                 get_safe_position(&new_coin_x, &new_coin_y);
                 Coin[0] = new_coin_x;
@@ -524,26 +411,19 @@ void main()
                 display_scores();
                 boop();
             }
+            
             move_sprite(0, PlayerPos[0].h, PlayerPos[1].h);
-
-
+            
             update_enemies();
-            // for(uint8_t i = 0; i < MAX_ENEMIES; i++) {
+            
+            // Check player-enemy collisions
             for(uint8_t i = 0; i < active_enemies; i++) {
                 int16_t enemy_x_dist = PlayerPos[0].h - enemies[i].pos[0].h;
                 int16_t enemy_y_dist = PlayerPos[1].h - enemies[i].pos[1].h;
                 
-                // Make distances positive if negative
                 if (enemy_x_dist < 0) enemy_x_dist = -enemy_x_dist;
                 if (enemy_y_dist < 0) enemy_y_dist = -enemy_y_dist;
                 
-                if (enemy_x_dist < 6 && enemy_y_dist < 6) {
-                    game_over = TRUE;
-                    hide_all_enemies();
-                    beedledo();
-                    break;
-                }
-
                 // Check enemy-coin collisions
                 int16_t enemy_coin_x_dist = enemies[i].pos[0].h - Coin[0].h;
                 int16_t enemy_coin_y_dist = enemies[i].pos[1].h - Coin[1].h;
@@ -561,11 +441,52 @@ void main()
                     display_scores();
                     beedledo();
                 }
+                
+                if (enemy_x_dist < 6 && enemy_y_dist < 6) {
+                    // Different behavior based on enemy type
+                    switch(enemies[i].type) {
+                        case ENEMY_TYPE_WANDERER:
+                        case ENEMY_TYPE_COIN_CHASER:
+                            // Calculate bounce velocities for player
+                            VelX = -(VelX + (VelX >> 1)); // Multiply by -1.5
+                            VelY = -(VelY + (VelY >> 1));
+                            
+                            // Calculate bounce velocities for enemy
+                            int16_t enemy_bounce_x = -(enemies[i].vel_x + (enemies[i].vel_x >> 1));
+                            int16_t enemy_bounce_y = -(enemies[i].vel_y + (enemies[i].vel_y >> 1));
+                            enemies[i].vel_x = enemy_bounce_x;
+                            enemies[i].vel_y = enemy_bounce_y;
+                            
+                            // Move both sprites apart slightly to prevent sticking
+                            if (PlayerPos[0].h < enemies[i].pos[0].h) {
+                                PlayerPos[0].w -= 256;
+                                enemies[i].pos[0].w += 256;
+                            } else {
+                                PlayerPos[0].w += 256;
+                                enemies[i].pos[0].w -= 256;
+                            }
+                            
+                            if (PlayerPos[1].h < enemies[i].pos[1].h) {
+                                PlayerPos[1].w -= 256;
+                                enemies[i].pos[1].w += 256;
+                            } else {
+                                PlayerPos[1].w += 256;
+                                enemies[i].pos[1].w -= 256;
+                            }
+                            
+                            bap();
+                            break;
+                            
+                        case ENEMY_TYPE_PLAYER_CHASER:
+                            game_over = TRUE;
+                            hide_all_enemies();
+                            beedledo();
+                            break;
+                    }
+                }
             }
-
+            
             vsync();
         }
-
-        // Game over screen
     }
 }

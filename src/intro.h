@@ -11,7 +11,7 @@
 #include "sprites.h"
 
 void clear_screen();
-void splash_screen();
+void splash_screen(BOOLEAN testing);
 void show_screen_border();
 
 #endif
