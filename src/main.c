@@ -23,16 +23,19 @@ BOOLEAN KEY_B_PRESSED = FALSE;
 
 void ready_start() {
     uint8_t x, y;
-    uint8_t counter = 15;
+    uint8_t counter = 60;
 
     while(counter--) {
-        if(sys_time % 5 == 0) {
+        if(sys_time % 20 == 0) {
             x = random(MIN_X, MAX_X);
             y = random(MIN_Y, MAX_Y);
             move_sprite(0, x, y);
+            bap();
         }
         vsync();
     }
+
+    performantdelay(20);
 
     boop();
 
@@ -42,7 +45,8 @@ void ready_start() {
     move_coin_to_safe_position();
 
     // Reset enemy spawning
-    active_enemies = 0;
+    // active_enemies = 0;
+    enemies_spawned = 0;
     spawn_timer = SPAWN_DELAY;
 
     // Reset velocities
@@ -50,32 +54,48 @@ void ready_start() {
     VelY = 0;
 
     reset_score();
+    display_scores();
+
 
     game_over = FALSE;
+    level_timer = 0;
 }
 
 
 
 void main() {
-    splash_screen(TESTING);
-    load_sprites();
+    // https://www.youtube.com/watch?v=nziu1O_cj1w&list=PLrW43fNmjaQVmjvIj3Ho3rzW46GEw14F9&index=5
+	SHOW_BKG;
+	SHOW_SPRITES;
+	DISPLAY_ON;
+
+    audio_init();
+
+    // This is the "intro" screen when the game first starts
+    seed_prng();
+
+
+
 
     uint8_t key;
+
     while(TRUE) {
+        level_intro_cutscene();
+        init_level();
         ready_start();
 
         while(!game_over) {
             key = joypad();
 
-            if (active_enemies < MAX_ENEMIES) {
-                if (spawn_timer > 0) {
-                    spawn_timer--;
-                } else {
-                    init_enemy(active_enemies); // Use index as type
-                    active_enemies++;
-                    spawn_timer = SPAWN_DELAY;
-                }
-            }
+            // if (active_enemies < MAX_ENEMIES) {
+            //     if (spawn_timer > 0) {
+            //         spawn_timer--;
+            //     } else {
+            //         init_enemy(active_enemies); // Use index as type
+            //         active_enemies++;
+            //         spawn_timer = SPAWN_DELAY;
+            //     }
+            // }
 
             if (key & J_START) {
                 pause_screen();
@@ -93,6 +113,9 @@ void main() {
 
             update_player_physics(key);
             handle_player_coin_collision();
+
+            handle_level_events();  // Handle level-specific events including enemy spawning
+
 
             update_enemies();
             handle_enemy_collisions();

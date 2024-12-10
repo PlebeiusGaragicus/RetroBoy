@@ -7,7 +7,7 @@
 
 
 
-extern const BOOLEAN TESTING;
+// extern const BOOLEAN TESTING;
 
 
 

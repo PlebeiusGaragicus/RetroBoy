@@ -29,7 +29,7 @@ const uint8_t ENEMY_SPAWN_CONFIG[MAX_ENEMIES] = {
 
 
 
-uint8_t active_enemies = 0;     // Track number of currently active enemies
+// uint8_t active_enemies = 0;     // Track number of currently active enemies
 uint8_t spawn_timer = 0;        // Timer for spawning enemies
 
 
@@ -50,10 +50,6 @@ int16_t coin_vel_y = 0;
 
 
 
-// #############################################################################
-// INTERNAL FUNCTIONS
-// #############################################################################
-
 
 BOOLEAN is_too_close_to_player(fixed pos_x, fixed pos_y) {
     int16_t x_dist = pos_x.b.h - PlayerPos[0].b.h;
@@ -64,7 +60,7 @@ BOOLEAN is_too_close_to_player(fixed pos_x, fixed pos_y) {
 }
 
 BOOLEAN is_too_close_to_enemies(fixed pos_x, fixed pos_y) {
-    for(uint8_t i = 0; i < active_enemies; i++) {
+    for(uint8_t i = 0; i < enemies_spawned; i++) {
         int16_t x_dist = pos_x.b.h - enemies[i].pos[0].b.h;
         int16_t y_dist = pos_y.b.h - enemies[i].pos[1].b.h;
         if (x_dist < 0) x_dist = -x_dist;
@@ -88,7 +84,7 @@ void get_safe_position(fixed* pos_x, fixed* pos_y) {
 void constrain_to_boundaries(Enemy* enemy) {
     if (enemy->pos[0].b.h < MIN_X) {
         enemy->pos[0].w = ((uint16_t)MIN_X << 8);
-        enemy->vel_x = -enemy->vel_x;  // Bounce off walls for wanderer
+        enemy->vel_x = -enemy->vel_x;
     }
     if (enemy->pos[0].b.h > MAX_X) {
         enemy->pos[0].w = ((uint16_t)MAX_X << 8);
@@ -103,24 +99,6 @@ void constrain_to_boundaries(Enemy* enemy) {
         enemy->vel_y = -enemy->vel_y;
     }
 }
-
-// void sort_enemies_by_x() {
-//     // Simple bubble sort - for small number of enemies this is fine
-//     for(uint8_t i = 0; i < active_enemies - 1; i++) {
-//         for(uint8_t j = 0; j < active_enemies - i - 1; j++) {
-//             if(enemies[j].pos[0].b.h > enemies[j + 1].pos[0].b.h) {
-//                 Enemy temp;
-//                 temp = enemies[j];
-//                 enemies[j] = enemies[j + 1];
-//                 enemies[j + 1] = temp;
-//             }
-//         }
-//     }
-// }
-
-// #############################################################################
-// External functions
-// #############################################################################
 
 
 void hide_all_enemies() {
@@ -270,7 +248,7 @@ void update_wanderer(Enemy* enemy) {
 
 void handle_enemy_collisions() {
     // Check each enemy against others within a reasonable distance
-    for(uint8_t i = 0; i < active_enemies; i++) {
+    for(uint8_t i = 0; i < enemies_spawned; i++) {
         // Check coin collision
         int16_t enemy_coin_x_dist = abs(enemies[i].pos[0].b.h - Coin[0].b.h);
         int16_t enemy_coin_y_dist = abs(enemies[i].pos[1].b.h - Coin[1].b.h);
@@ -337,12 +315,12 @@ void handle_enemy_collisions() {
         }
 
         // Check collisions with other enemies
-        for(uint8_t j = i + 1; j < active_enemies; j++) {
+        for(uint8_t j = i + 1; j < enemies_spawned; j++) {
             int16_t dx = abs(enemies[i].pos[0].b.h - enemies[j].pos[0].b.h);
             int16_t dy = abs(enemies[i].pos[1].b.h - enemies[j].pos[1].b.h);
 
-            // Only process if they're close enough
-            if (dx < 16 && dy < 8) {
+            // Only process if they're close enough (8x8 sprite size)
+            if (dx < 8 && dy < 8) {
                 // Store original velocities
                 int16_t orig_enemy1_vel_x = enemies[i].vel_x;
                 int16_t orig_enemy1_vel_y = enemies[i].vel_y;
@@ -379,7 +357,7 @@ void handle_enemy_collisions() {
 }
 
 void update_enemies() {
-    for(uint8_t i = 0; i < active_enemies; i++) {
+    for(uint8_t i = 0; i < enemies_spawned; i++) {
         switch(enemies[i].type) {
             case ENEMY_TYPE_COIN_CHASER:
                 update_coin_chaser(&enemies[i]);
@@ -403,8 +381,8 @@ void update_enemies() {
 }
 
 void init_enemy(uint8_t index) {
-    uint8_t type = ENEMY_SPAWN_CONFIG[index];
-    
+    uint8_t type = get_enemy_type(current_level, enemies_spawned);
+
     set_sprite_prop(index + 2, S_PRIORITY);
 
     fixed pos_x, pos_y;

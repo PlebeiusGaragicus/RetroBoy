@@ -11,7 +11,11 @@
 #include "sprites.h"
 
 void clear_screen();
-void splash_screen(BOOLEAN testing);
+void level_intro_cutscene();
 void show_screen_border();
+
+void load_justin();
+void load_trump();
+void load_cybertruck();
 
 #endif

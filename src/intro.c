@@ -13,6 +13,8 @@
 #include "sprites.h"
 #include "faces.h"
 
+#include "level.h"
+
 
 // DMG_PALETTE; //??? TODO:
 
@@ -88,20 +90,27 @@ void show_screen_border() {
 
 
 
-void splash_screen(BOOLEAN testing) {
-    // https://www.youtube.com/watch?v=nziu1O_cj1w&list=PLrW43fNmjaQVmjvIj3Ho3rzW46GEw14F9&index=5
-	SHOW_BKG;
-	SHOW_SPRITES;
-	DISPLAY_ON;
-    audio_init();
+void level_intro_cutscene() {
 
-    seed_prng();
+    HIDE_SPRITES;
 
-    if (! testing) {
 
-        load_justin();
-        // load_trump();
-        // load_cybertruck();
+    if (! TESTING) {
+
+        switch(current_level) {
+            case 0:
+                // load_trump();
+                load_justin();
+                break;
+
+            case 1:
+                load_trump();
+                break;
+
+            case 2:
+                load_cybertruck();
+                break;
+        }
 
         performantdelay(50);
 
@@ -113,6 +122,9 @@ void splash_screen(BOOLEAN testing) {
         beedledo();
     }
     clear_screen();
+    load_sprites();
+
+    SHOW_SPRITES;
 }
 
 
