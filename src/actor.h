@@ -7,11 +7,7 @@
 #define SPEED_CHANGE 8
 #define PLAYER_SPEED_FRICTION 2
 
-// [0] is X, [1] is Y
-extern fixed PlayerPos[2];
-extern int16_t VelX;
-extern int16_t VelY;
-extern uint8_t PlayerSpriteIndex;
+
 
 extern fixed Coin[2];
 extern int16_t coin_vel_x;
@@ -51,8 +47,19 @@ typedef struct {
     uint8_t type;        // Enemy behavior type
     int16_t vel_x;       // Velocity X
     int16_t vel_y;       // Velocity Y
-    uint8_t speed;       // Movement speed
+    uint8_t top_speed;   // Maximum movement speed
 } Enemy;
+
+typedef struct {
+    fixed pos[2];        // Position (x,y)
+    int16_t vel_x;       // Velocity X
+    int16_t vel_y;       // Velocity Y
+    uint8_t top_speed;   // Maximum movement speed
+} Player;
+
+// [0] is X, [1] is Y
+extern Player player;  // Global player instance
+extern uint8_t PlayerSpriteIndex;
 
 extern Enemy enemies[MAX_ENEMIES];
 

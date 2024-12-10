@@ -14,12 +14,7 @@
 #include "level.h"
 #include "actor.h"
 
-
-
 BOOLEAN KEY_B_PRESSED = FALSE;
-
-
-
 
 void ready_start() {
     uint8_t x, y;
@@ -39,43 +34,36 @@ void ready_start() {
 
     boop();
 
-    PlayerPos[0].w = (uint16_t)x << 8;
-    PlayerPos[1].w = (uint16_t)y << 8;
+    // Initialize player at random position
+    player.pos[0].w = (uint16_t)x << 8;
+    player.pos[1].w = (uint16_t)y << 8;
+    player.vel_x = 0;
+    player.vel_y = 0;
+    player.top_speed = TOP_SPEED;
 
     move_coin_to_safe_position();
 
     // Reset enemy spawning
-    // active_enemies = 0;
     enemies_spawned = 0;
     spawn_timer = SPAWN_DELAY;
 
-    // Reset velocities
-    VelX = 0;
-    VelY = 0;
-
     reset_score();
     display_scores();
-
 
     game_over = FALSE;
     level_timer = 0;
 }
 
-
-
 void main() {
     // https://www.youtube.com/watch?v=nziu1O_cj1w&list=PLrW43fNmjaQVmjvIj3Ho3rzW46GEw14F9&index=5
-	SHOW_BKG;
-	SHOW_SPRITES;
-	DISPLAY_ON;
+    SHOW_BKG;
+    SHOW_SPRITES;
+    DISPLAY_ON;
 
     audio_init();
 
     // This is the "intro" screen when the game first starts
     seed_prng();
-
-
-
 
     uint8_t key;
 
@@ -86,16 +74,6 @@ void main() {
 
         while(!game_over) {
             key = joypad();
-
-            // if (active_enemies < MAX_ENEMIES) {
-            //     if (spawn_timer > 0) {
-            //         spawn_timer--;
-            //     } else {
-            //         init_enemy(active_enemies); // Use index as type
-            //         active_enemies++;
-            //         spawn_timer = SPAWN_DELAY;
-            //     }
-            // }
 
             if (key & J_START) {
                 pause_screen();
@@ -115,7 +93,6 @@ void main() {
             handle_player_coin_collision();
 
             handle_level_events();  // Handle level-specific events including enemy spawning
-
 
             update_enemies();
             handle_enemy_collisions();
