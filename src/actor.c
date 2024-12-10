@@ -35,16 +35,29 @@ uint8_t spawn_timer = 0;        // Timer for spawning enemies
 
 Enemy enemies[MAX_ENEMIES];
 Player player;  // Global player instance
-// uint8_t PlayerSpriteIndex = 0;
 
-fixed Coin[2];
-int16_t coin_vel_x = 0;
-int16_t coin_vel_y = 0;
+Coin coin = {
+    .pos = {{0}},
+    .vel_x = 0,
+    .vel_y = 0,
+    .sprite_index = 0
+};
 
-
-
-
-
+void update_coin_animation() {
+    // Update sprite index (0-5)
+    coin.sprite_index = (coin.sprite_index + 1) % 6;
+    
+    // Set sprite properties based on index
+    if (coin.sprite_index >= 3) {
+        // Flip sprite horizontally for indices 3-5
+        set_sprite_prop(1, S_FLIPX);
+        set_sprite_tile(1, 1 + (coin.sprite_index - 3));  // Use frames 1-3 flipped
+    } else {
+        // Normal sprite for indices 0-2
+        set_sprite_prop(1, 0);
+        set_sprite_tile(1, 1 + coin.sprite_index);  // Use frames 1-3 normally
+    }
+}
 
 BOOLEAN is_too_close_to_player(fixed pos_x, fixed pos_y) {
     int16_t x_dist = pos_x.b.h - player.pos[0].b.h;
@@ -178,15 +191,21 @@ void update_player_physics(uint8_t key) {
 void move_coin_to_safe_position() {
     fixed new_coin_x, new_coin_y;
     get_safe_position(&new_coin_x, &new_coin_y);
-    Coin[0] = new_coin_x;
-    Coin[1] = new_coin_y;
-    move_sprite(1, Coin[0].b.h, Coin[1].b.h);
+    coin.pos[0] = new_coin_x;
+    coin.pos[1] = new_coin_y;
+    
+    // Reset animation
+    coin.sprite_index = 0;
+    set_sprite_prop(1, 0);  // Clear flip property
+    set_sprite_tile(1, 1);  // Set initial sprite
+    
+    move_sprite(1, coin.pos[0].b.h, coin.pos[1].b.h);
 }
 
 
 void handle_player_coin_collision() {
-    int16_t x_dist = player.pos[0].b.h - Coin[0].b.h;
-    int16_t y_dist = player.pos[1].b.h - Coin[1].b.h;
+    int16_t x_dist = player.pos[0].b.h - coin.pos[0].b.h;
+    int16_t y_dist = player.pos[1].b.h - coin.pos[1].b.h;
     if (x_dist < 0) x_dist = -x_dist;
     if (y_dist < 0) y_dist = -y_dist;
     if (x_dist < 6 && y_dist < 6) {
@@ -200,13 +219,13 @@ void handle_player_coin_collision() {
 
 void update_coin_chaser(Enemy* enemy) {
     // Move toward coin with acceleration
-    if (Coin[0].b.h > enemy->pos[0].b.h) {
+    if (coin.pos[0].b.h > enemy->pos[0].b.h) {
         enemy->vel_x += enemy->top_speed/16;
     } else {
         enemy->vel_x -= enemy->top_speed/16;
     }
     
-    if (Coin[1].b.h > enemy->pos[1].b.h) {
+    if (coin.pos[1].b.h > enemy->pos[1].b.h) {
         enemy->vel_y += enemy->top_speed/16;
     } else {
         enemy->vel_y -= enemy->top_speed/16;
@@ -249,8 +268,8 @@ void handle_enemy_collisions() {
     // Check each enemy against others within a reasonable distance
     for(uint8_t i = 0; i < enemies_spawned; i++) {
         // Check coin collision
-        int16_t enemy_coin_x_dist = abs(enemies[i].pos[0].b.h - Coin[0].b.h);
-        int16_t enemy_coin_y_dist = abs(enemies[i].pos[1].b.h - Coin[1].b.h);
+        int16_t enemy_coin_x_dist = abs(enemies[i].pos[0].b.h - coin.pos[0].b.h);
+        int16_t enemy_coin_y_dist = abs(enemies[i].pos[1].b.h - coin.pos[1].b.h);
 
         if (enemy_coin_x_dist < 6 && enemy_coin_y_dist < 6) {
             move_coin_to_safe_position();

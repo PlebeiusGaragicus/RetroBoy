@@ -92,6 +92,11 @@ void main() {
             update_player_physics(key);
             handle_player_coin_collision();
 
+            // Animate coin every 8 frames
+            if (sys_time % 8 == 0) {
+                update_coin_animation();
+            }
+
             handle_level_events();  // Handle level-specific events including enemy spawning
 
             update_enemies();

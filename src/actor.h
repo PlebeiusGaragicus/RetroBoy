@@ -9,9 +9,14 @@
 
 
 
-extern fixed Coin[2];
-extern int16_t coin_vel_x;
-extern int16_t coin_vel_y;
+typedef struct {
+    fixed pos[2];        // Position (x,y)
+    int16_t vel_x;       // Velocity X
+    int16_t vel_y;       // Velocity Y
+    uint8_t sprite_index;  // Current sprite frame (0-5: 0-2 normal, 3-5 flipped)
+} Coin;
+
+extern Coin coin;  // Global coin instance
 
 
 
@@ -70,6 +75,7 @@ void init_enemy(uint8_t index);
 void handle_enemy_collisions();
 
 void move_coin_to_safe_position();
+void update_coin_animation();  // New function to handle coin animation
 
 void update_player_physics(uint8_t key);
 void handle_player_coin_collision();

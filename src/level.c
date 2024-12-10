@@ -138,27 +138,29 @@ void load_sprites()
     show_screen_border();
     load_number_tiles();
 
-
+    // Player sprite
     set_sprite_data(0, 1, Smiles);
-    // set_sprite_data(0, 1, Pointer);
     set_sprite_tile(0, 0);
 
-    set_sprite_data(1, 1, CoinSprite_light);
-    set_sprite_tile(1, 1);
-    //TODO: research this later...
-    // set_sprite_prop(1,0);
+    // Coin sprite - using CoinFlip animation
+    set_sprite_data(1, 3, CoinFlip);  // Load all 3 frames of CoinFlip
+    set_sprite_tile(1, 1);  // Start with first frame
+    set_sprite_prop(1, 0);  // Clear any sprite properties
 
     // Coin chaser sprite
-    set_sprite_data(2, 1, Spoky);
-    set_sprite_tile(2, 2);
+    set_sprite_data(4, 1, Spoky);
+    set_sprite_tile(2, 4);
 
     // Player chaser sprite
-    set_sprite_data(3, 1, Frowns);
-    set_sprite_tile(3, 3);
+    set_sprite_data(5, 1, Frowns);
+    set_sprite_tile(3, 5);
 
     // Wanderer sprite
-    set_sprite_data(4, 1, Gooby);
-    set_sprite_tile(4, 4);
+    set_sprite_data(6, 1, Gooby);
+    set_sprite_tile(4, 6);
+
+    // Make sure coin is visible at start
+    move_sprite(1, coin.pos[0].b.h, coin.pos[1].b.h);
 }
 
 void pause_screen() {

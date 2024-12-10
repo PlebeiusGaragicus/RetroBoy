@@ -4,5 +4,5 @@
 // #define VERSION "v" __DATE__ "-" __TIME__
 #define VERSION __DATE__ " " __TIME__
 
-#define TESTING FALSE
-// #define TESTING TRUE
+// #define TESTING FALSE
+#define TESTING TRUE

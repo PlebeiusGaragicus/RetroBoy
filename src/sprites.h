@@ -12,6 +12,7 @@ extern const unsigned char CoinSprite_light[];
 extern const unsigned char Smiles[];
 extern const unsigned char Frowns[];
 extern const unsigned char Pointer[];
+extern const unsigned char CoinFlip[];
 
 // extern const unsigned char Snek[];
 extern const unsigned char Snek_head[];
