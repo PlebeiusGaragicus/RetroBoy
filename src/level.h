@@ -36,7 +36,7 @@ void handle_level_events();
 typedef struct {
     uint8_t max_enemies;          // Maximum enemies for this level
     uint16_t spawn_interval;      // Time between enemy spawns
-    // uint16_t level_duration;      // How long the level lasts - NOTE: do not use this - we have to "win" the level in order to go to the next level
+    uint8_t score_needed_to_win;
 } LevelConfig;
 
 extern const LevelConfig LEVEL_CONFIGS[MAX_LEVEL];

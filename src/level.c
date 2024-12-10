@@ -29,19 +29,19 @@ const LevelConfig LEVEL_CONFIGS[MAX_LEVEL] = {
     {
         .max_enemies = 3,
         .spawn_interval = 180,    // 3 seconds between spawns
-        // .level_duration = 3600    // 1 minute
+        .score_needed_to_win = 4
     },
     // Level 2: Medium - Wanderers and coin chasers
     {
         .max_enemies = 5,
         .spawn_interval = 120,    // 2 seconds between spawns
-        // .level_duration = 3600    // 1 minute
+        .score_needed_to_win = 6
     },
     // Level 3: Hard - All enemy types
     {
         .max_enemies = 7,
         .spawn_interval = 60,     // 1 second between spawns
-        // .level_duration = 3600    // 1 minute
+        .score_needed_to_win = 10
     }
 };
 
@@ -77,6 +77,7 @@ void init_level() {
     level_timer = 0;
     enemies_spawned = 0;
     hide_all_enemies();
+    game_over = FALSE;
     // active_enemies = 0;
 }
 
@@ -87,14 +88,15 @@ void handle_level_events() {
     level_timer++;
 
     // Check if level is complete
-    if (player_score > 3) {
+    if (player_score >= config->score_needed_to_win) {
         if (current_level < MAX_LEVEL - 1) {
             beedledo();
             player_score = 0;
             current_level++;
-            init_level();
+            // init_level();
             // splash_screen();
-            level_intro_cutscene();
+            // level_intro_cutscene();
+            game_over = TRUE;
         } else {
             // Game complete!
             game_over = TRUE;

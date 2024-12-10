@@ -94,26 +94,25 @@ void level_intro_cutscene() {
 
     HIDE_SPRITES;
 
+    switch(current_level) {
+        case 0:
+            // load_trump();
+            load_justin();
+            break;
+
+        case 1:
+            load_trump();
+            break;
+
+        case 2:
+            load_cybertruck();
+            break;
+    }
+
+    performantdelay(50);
+
 
     if (! TESTING) {
-
-        switch(current_level) {
-            case 0:
-                // load_trump();
-                load_justin();
-                break;
-
-            case 1:
-                load_trump();
-                break;
-
-            case 2:
-                load_cybertruck();
-                break;
-        }
-
-        performantdelay(50);
-
         while(TRUE) {
             if (joypad()) break;
             vsync();

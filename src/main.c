@@ -69,6 +69,7 @@ void main() {
 
     while(TRUE) {
         level_intro_cutscene();
+        hide_all_enemies();
         init_level();
         ready_start();
 

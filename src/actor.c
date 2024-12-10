@@ -111,7 +111,7 @@ void constrain_to_boundaries(Enemy* enemy) {
 
 void hide_all_enemies() {
     for(uint8_t i = 0; i < MAX_ENEMIES; i++) {
-        move_sprite(i + 2, 0, 0);  // Move sprites off-screen
+        move_sprite(i + 4, 0, 0);  // Move sprites off-screen
     }
 }
 
@@ -387,7 +387,7 @@ void update_enemies() {
                 update_wanderer(&enemies[i]);
                 break;
         }
-        
+
         // Update sprite position
         move_sprite(enemies[i].sprite_id, 
                    enemies[i].pos[0].b.h, 
@@ -404,22 +404,22 @@ void init_enemy(uint8_t index) {
     get_safe_position(&pos_x, &pos_y);
     enemies[index].pos[0] = pos_x;
     enemies[index].pos[1] = pos_y;
-    enemies[index].sprite_id = index + 2;
+    enemies[index].sprite_id = index + 4;
     enemies[index].type = type;
     enemies[index].vel_x = 0;
     enemies[index].vel_y = 0;
 
     switch(type) {
         case ENEMY_TYPE_COIN_CHASER:
-            set_sprite_tile(enemies[index].sprite_id, 2);
+            set_sprite_tile(enemies[index].sprite_id, 4);
             enemies[index].top_speed = COIN_CHASER_SPEED;
             break;
         case ENEMY_TYPE_PLAYER_CHASER:
-            set_sprite_tile(enemies[index].sprite_id, 3);
+            set_sprite_tile(enemies[index].sprite_id, 5);
             enemies[index].top_speed = PLAYER_CHASER_SPEED;
             break;
         case ENEMY_TYPE_WANDERER:
-            set_sprite_tile(enemies[index].sprite_id, 4);
+            set_sprite_tile(enemies[index].sprite_id, 6);
             enemies[index].top_speed = WANDERER_SPEED;
             break;
     }
